@@ -288,6 +288,196 @@ TRACKS = {
                  "Excellent surface. Rewards a well-balanced setup.",
         "bias": {},
     },
+
+    # =====================================================================
+    # HISTORIC TRACK LAYOUTS
+    # =====================================================================
+    "Spa-Francorchamps (1960s Layout)": {
+        "type": "High-Speed Circuit", "length_km": 14.1, "surface": 2,
+        "top_speed": 5, "slow_corners": 3, "elevation": "high",
+        "notes": "The original 14km Spa through public roads. Incredibly fast and dangerous. "
+                 "Masta Straight was flat-out on public roads. Burnenville and Stavelot were "
+                 "terrifyingly fast bends. No runoff anywhere. One of the most dangerous "
+                 "circuits ever used for F1. Trees and houses line the track.",
+        "bias": {
+            "Suspension": {"Front Ride Height": 5, "Rear Ride Height": 5,
+                          "Front Spring Rate": -10, "Rear Spring Rate": -10},
+            "Aero": {"Rear Wing Angle": -3},
+            "Gearing": {"Final Drive": -0.20},
+        },
+    },
+    "Nurburgring Nordschleife (1960s-70s Full Circuit)": {
+        "type": "Bumpy / Old-School Circuit", "length_km": 22.8, "surface": 1,
+        "top_speed": 4, "slow_corners": 8, "elevation": "extreme",
+        "notes": "The full Nordschleife before modern modifications. Even rougher surface "
+                 "than today. No chicanes at some high-speed sections. Grass and trees as runoff. "
+                 "The ultimate test of man and machine. Setup must prioritize survival.",
+        "bias": {
+            "Suspension": {"Front Ride Height": 10, "Rear Ride Height": 10,
+                          "Front Spring Rate": -15, "Rear Spring Rate": -15,
+                          "Front Anti-Roll Bar": -5, "Rear Anti-Roll Bar": -5},
+            "Dampers": {"Front Fast Bump": -3, "Rear Fast Bump": -3,
+                       "Front Fast Rebound": -3, "Rear Fast Rebound": -3},
+        },
+    },
+    "Monza (1960s with Banking)": {
+        "type": "High-Speed Circuit", "length_km": 10.0, "surface": 2,
+        "top_speed": 5, "slow_corners": 2, "elevation": "flat",
+        "notes": "The full Monza with the banked oval section combined with the road course. "
+                 "The banking was incredibly bumpy and dangerous. Extreme speeds on the banking. "
+                 "Cars needed compliance for the banking surface and speed for the road section.",
+        "bias": {
+            "Suspension": {"Front Spring Rate": -10, "Rear Spring Rate": -10,
+                          "Front Ride Height": 5, "Rear Ride Height": 5},
+            "Aero": {"Front Wing Angle": -5, "Rear Wing Angle": -5},
+            "Gearing": {"Final Drive": -0.30},
+        },
+    },
+    "Silverstone (1950s-60s Layout)": {
+        "type": "High-Speed Circuit", "length_km": 4.7, "surface": 3,
+        "top_speed": 4, "slow_corners": 2, "elevation": "flat",
+        "notes": "Original airfield layout. Very fast with long straights between the old "
+                 "perimeter road corners. Stowe, Club, and Copse were all much faster than today. "
+                 "No chicanes. Simple layout that rewarded bravery and straight-line speed.",
+        "bias": {
+            "Aero": {"Front Wing Angle": -2, "Rear Wing Angle": -3},
+            "Gearing": {"Final Drive": -0.15},
+        },
+    },
+    "Le Mans (1960s-70s — No Chicanes)": {
+        "type": "High-Speed Circuit", "length_km": 13.5, "surface": 2,
+        "top_speed": 5, "slow_corners": 2, "elevation": "low",
+        "notes": "Le Mans before the Mulsanne chicanes were added in 1990. "
+                 "6km Mulsanne Straight — flat out for over 3 minutes. Cars reached 250mph+. "
+                 "Setup was entirely about top speed and stability at extreme velocity. "
+                 "Minimum drag was everything. Night driving on unlit roads.",
+        "bias": {
+            "Aero": {"Front Wing Angle": -5, "Rear Wing Angle": -6},
+            "Gearing": {"Final Drive": -0.35},
+            "Suspension": {"Rear Toe": 0.10},
+        },
+    },
+    "Hockenheim (Pre-2002 Long Layout)": {
+        "type": "High-Speed Circuit", "length_km": 6.8, "surface": 3,
+        "top_speed": 5, "slow_corners": 3, "elevation": "flat",
+        "notes": "The original Hockenheim through the forest. Three massive straights with "
+                 "chicanes at the end. Stadium section was tight. Famous for its high-speed "
+                 "character. Clark chicane and Ostkurve were fast sweepers. Jim Clark's memorial.",
+        "bias": {
+            "Aero": {"Front Wing Angle": -3, "Rear Wing Angle": -4},
+            "Gearing": {"Final Drive": -0.20},
+        },
+    },
+    "Rouen-Les-Essarts": {
+        "type": "High-Speed Circuit", "length_km": 6.5, "surface": 2,
+        "top_speed": 4, "slow_corners": 3, "elevation": "high",
+        "notes": "Legendary French circuit used for the French GP until 1968. "
+                 "Public road circuit through the countryside. Massive downhill section "
+                 "with a long fast sweeper at the bottom. Very dangerous — no barriers. "
+                 "The cobblestone sections near the pits are treacherous.",
+        "bias": {
+            "Suspension": {"Front Ride Height": 5, "Rear Ride Height": 5,
+                          "Front Spring Rate": -10, "Rear Spring Rate": -10},
+        },
+    },
+    "Reims-Gueux": {
+        "type": "High-Speed Circuit", "length_km": 8.3, "surface": 2,
+        "top_speed": 5, "slow_corners": 1, "elevation": "flat",
+        "notes": "Triangular public road circuit near Reims, France. Used for the French GP. "
+                 "Almost entirely flat-out — barely any braking. Slipstreaming was essential. "
+                 "Very fast and very dangerous. The grandstands still stand abandoned today.",
+        "bias": {
+            "Aero": {"Front Wing Angle": -5, "Rear Wing Angle": -5},
+            "Gearing": {"Final Drive": -0.30},
+        },
+    },
+    "Kyalami (1967-1987 Layout)": {
+        "type": "High-Speed Circuit", "length_km": 4.1, "surface": 3,
+        "top_speed": 4, "slow_corners": 3, "elevation": "medium",
+        "notes": "South African GP circuit. Fast and flowing with elevation changes. "
+                 "The Kink was a famous high-speed commitment. Good mix of corners. "
+                 "High altitude means less air density — less aero grip and engine power.",
+        "bias": {
+            "Aero": {"Front Wing Angle": 1, "Rear Wing Angle": 2},
+        },
+    },
+    "Watkins Glen (1960s-70s Layout)": {
+        "type": "High-Speed Circuit", "length_km": 5.4, "surface": 3,
+        "top_speed": 4, "slow_corners": 2, "elevation": "medium",
+        "notes": "American F1 venue. Fast and sweeping through upstate New York countryside. "
+                 "The Esses were taken flat in F1 cars. Very scenic. Long, fast layout "
+                 "that rewarded brave drivers. Boot section added more technical challenge.",
+        "bias": {},
+    },
+    "Dijon-Prenois": {
+        "type": "Technical / Tight Circuit", "length_km": 3.8, "surface": 3,
+        "top_speed": 3, "slow_corners": 4, "elevation": "medium",
+        "notes": "Short, fast French circuit. Scene of the legendary Villeneuve vs Arnoux "
+                 "battle in 1979. Lots of elevation change for a short track. "
+                 "Pouas hairpin is very slow. The S-curves are committed.",
+        "bias": {
+            "Gearing": {"Final Drive": 0.15},
+        },
+    },
+    "Zolder": {
+        "type": "Technical / Tight Circuit", "length_km": 4.0, "surface": 3,
+        "top_speed": 2, "slow_corners": 5, "elevation": "low",
+        "notes": "Belgian circuit, hosted the Belgian GP before Spa returned. "
+                 "Tight and technical. Narrow with limited runoff. The chicane complex "
+                 "is demanding. Tragically where Gilles Villeneuve died in 1982.",
+        "bias": {
+            "Aero": {"Front Wing Angle": 3, "Rear Wing Angle": 4},
+            "Gearing": {"Final Drive": 0.20},
+        },
+    },
+    "Jarama": {
+        "type": "Technical / Tight Circuit", "length_km": 3.4, "surface": 3,
+        "top_speed": 2, "slow_corners": 6, "elevation": "medium",
+        "notes": "Spanish GP circuit near Madrid. Very tight and twisty. "
+                 "Difficult to overtake. Lots of slow corners. "
+                 "Maximum downforce needed. Hot conditions typical.",
+        "bias": {
+            "Aero": {"Front Wing Angle": 5, "Rear Wing Angle": 5},
+            "Gearing": {"Final Drive": 0.25},
+        },
+    },
+    "Osterreichring (1970s-80s — Pre-A1 Ring)": {
+        "type": "High-Speed Circuit", "length_km": 5.9, "surface": 3,
+        "top_speed": 4, "slow_corners": 2, "elevation": "high",
+        "notes": "The original Austrian GP circuit before it was rebuilt as the A1-Ring/Red Bull Ring. "
+                 "Much faster and longer than the modern layout. Sweeping curves through the Styrian hills. "
+                 "The Bosch Kurve was taken flat in F1. Scary elevation changes.",
+        "bias": {
+            "Aero": {"Rear Wing Angle": -2},
+        },
+    },
+    "Mosport Park (1960s-80s)": {
+        "type": "Bumpy / Old-School Circuit", "length_km": 3.9, "surface": 2,
+        "top_speed": 3, "slow_corners": 3, "elevation": "high",
+        "notes": "Canadian GP venue. Incredible elevation changes through Ontario countryside. "
+                 "Moss Corner is a high-speed downhill sweeper. The Esses are blind and fast. "
+                 "Very demanding on both car and driver. Natural terrain racing at its best.",
+        "bias": {
+            "Suspension": {"Front Ride Height": 5, "Rear Ride Height": 5},
+            "Dampers": {"Front Fast Bump": -2, "Rear Fast Bump": -2},
+        },
+    },
+    "Riverside International Raceway": {
+        "type": "High-Speed Circuit", "length_km": 5.3, "surface": 3,
+        "top_speed": 4, "slow_corners": 3, "elevation": "medium",
+        "notes": "Famous California circuit, now demolished. Hosted F1, NASCAR, Can-Am. "
+                 "Turn 6 was a legendary fast sweeper. The esses were demanding. "
+                 "Hot desert conditions meant tire wear was brutal.",
+        "bias": {},
+    },
+    "Donington Park (Pre-2009 Layout)": {
+        "type": "Technical / Tight Circuit", "length_km": 4.0, "surface": 3,
+        "top_speed": 3, "slow_corners": 4, "elevation": "medium",
+        "notes": "British circuit famous for Senna's legendary 1993 wet race. "
+                 "Mix of fast and slow corners. Craner Curves are a high-speed downhill sequence. "
+                 "Old Hairpin is very tight. Melbourne Loop rewards good traction.",
+        "bias": {},
+    },
 }
 
 

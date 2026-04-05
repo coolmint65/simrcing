@@ -320,6 +320,518 @@ CARS = {
                  "Marginally better top speed, slightly less downforce.",
         "bias": {"Aero": {"Front Wing Angle": -1}},
     },
+
+    # =====================================================================
+    # HISTORIC — 1950s Sports Cars
+    # =====================================================================
+    "Mercedes-Benz 300 SLR (1955)": {
+        "class": "Historic GT / Sports Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 880, "power": 310, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Inline-8 fuel-injected sports racer. Famously driven by Moss/Jenkinson at the Mille Miglia. "
+                 "Drum brakes with air scoops. Very fast for its era but no modern safety features. "
+                 "Inboard front brakes reduce unsprung weight.",
+        "bias": {
+            "Brakes": {"Brake Pressure": -8},
+            "Suspension": {"Front Spring Rate": -10, "Rear Spring Rate": -10},
+        },
+    },
+    "Jaguar D-Type (1955)": {
+        "class": "Historic GT / Sports Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 850, "power": 270, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Le Mans winning sports racer. Inline-6 with disc brakes — revolutionary for the era. "
+                 "Monocoque construction. The small fin on the headrest aids high-speed stability. "
+                 "Better braking than drum-brake rivals.",
+        "bias": {
+            "Brakes": {"Brake Pressure": -3},
+            "Suspension": {"Front Spring Rate": -10, "Rear Spring Rate": -10},
+        },
+    },
+    "Aston Martin DBR1 (1959)": {
+        "class": "Historic GT / Sports Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 840, "power": 255, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Inline-6, Le Mans winner 1959. Disc brakes all round. Relatively light. "
+                 "Good handling balance for the era. More refined than rivals. "
+                 "Lower power than Mercedes but better chassis.",
+        "bias": {
+            "Suspension": {"Front Spring Rate": -8, "Rear Spring Rate": -8},
+        },
+    },
+    "Ferrari 250 Testa Rossa (1958)": {
+        "class": "Historic GT / Sports Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 800, "power": 300, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "V12 sports racer. Multiple Le Mans wins. Drum brakes (early), disc (later). "
+                 "Beautiful pontoon-fender body. High-revving V12 gives good engine braking. "
+                 "Relatively light but drums fade in endurance.",
+        "bias": {
+            "Engine": {"Engine Braking": 5},
+            "Brakes": {"Brake Pressure": -5},
+        },
+    },
+
+    # =====================================================================
+    # HISTORIC — 1960s GT and Sports Cars
+    # =====================================================================
+    "Ferrari 330 P4 (1967)": {
+        "class": "Historic GT / Sports Car", "engine": "mid", "drivetrain": "RWD",
+        "weight": 792, "power": 450, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Mid-engine V12 sports prototype. One of the most beautiful race cars ever. "
+                 "Three-valve heads, Lucas fuel injection. Incredibly responsive engine. "
+                 "Mid-engine layout was revolutionary for Ferrari at the time.",
+        "bias": {
+            "Engine": {"Throttle Map": 1},
+            "Suspension": {"Front Ride Height": -3, "Rear Ride Height": -3},
+        },
+    },
+    "Porsche 906 Carrera 6 (1966)": {
+        "class": "Historic GT / Sports Car", "engine": "rear", "drivetrain": "RWD",
+        "weight": 580, "power": 210, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Lightweight flat-6 rear-engine sports car. Only 210hp but very light. "
+                 "Fiberglass body. Excellent handling due to low weight. "
+                 "The start of Porsche's legendary prototype lineage.",
+        "bias": {
+            "Suspension": {"Rear Spring Rate": -5},
+        },
+    },
+    "Porsche 910 (1967)": {
+        "class": "Historic GT / Sports Car", "engine": "rear", "drivetrain": "RWD",
+        "weight": 600, "power": 220, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Evolution of the 906. Flat-6 or flat-8 engine options. "
+                 "Better aerodynamics and suspension than the 906. Light and nimble.",
+        "bias": {},
+    },
+    "Lola T70 Mk III (1967)": {
+        "class": "Historic GT / Sports Car", "engine": "mid", "drivetrain": "RWD",
+        "weight": 870, "power": 480, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Chevrolet V8 powered sports prototype. Massive power in a relatively light car. "
+                 "Popular in Can-Am and endurance racing. Big-block American V8 torque means "
+                 "careful throttle management needed. Sounds incredible.",
+        "bias": {
+            "Differential": {"Power (Accel) Lock": -5},
+            "Engine": {"Throttle Map": 1},
+        },
+    },
+    "Chaparral 2E (1966)": {
+        "class": "Historic GT / Sports Car", "engine": "mid", "drivetrain": "RWD",
+        "weight": 780, "power": 450, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "Pioneering high wing Can-Am car. First race car with a moveable aero device. "
+                 "Chevrolet V8. The wing was driver-adjustable — full angle in corners, flat on straights. "
+                 "Revolutionary for its time.",
+        "bias": {
+            "Aero": {"Rear Wing Angle": 3},
+        },
+    },
+    "Ferrari 275 GTB/C (1966)": {
+        "class": "Historic GT / Sports Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 950, "power": 320, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Competition version of the road-going 275 GTB. V12, rear transaxle. "
+                 "Better weight distribution than most front-engine cars of the era. "
+                 "Aluminum body panels save weight. A true gentleman racer's GT.",
+        "bias": {
+            "Brakes": {"Brake Bias": -0.5},
+        },
+    },
+    "AC Cobra 289 (1963)": {
+        "class": "Historic GT / Sports Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 930, "power": 271, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "The smaller-engine Cobra. More balanced than the 427 big-block version. "
+                 "Ford 289 V8 is less explosive but more manageable. Better handling than the 427. "
+                 "Lighter and more nimble. Good introduction to Cobra racing.",
+        "bias": {
+            "Differential": {"Power (Accel) Lock": -5},
+        },
+    },
+
+    # =====================================================================
+    # HISTORIC — 1960s/70s Formula 1
+    # =====================================================================
+    "Cooper T51 (1959)": {
+        "class": "Historic Formula / Open-Wheel", "engine": "rear", "drivetrain": "RWD",
+        "weight": 460, "power": 240, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "First rear-engine F1 World Champion car. Coventry Climax engine. "
+                 "Small and nimble. Revolutionized F1 — proved rear-engine was the future. "
+                 "Modest power but excellent handling for its era.",
+        "bias": {
+            "Engine": {"Throttle Map": 1},
+            "Suspension": {"Front Spring Rate": -10, "Rear Spring Rate": -10},
+        },
+    },
+    "Lotus 25 (1963)": {
+        "class": "Historic Formula / Open-Wheel", "engine": "rear", "drivetrain": "RWD",
+        "weight": 450, "power": 195, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "First monocoque F1 car. Jim Clark's championship winner. "
+                 "Revolutionary lightweight construction. Climax V8 engine. "
+                 "Incredible cornering for its time due to low weight and good balance.",
+        "bias": {
+            "Suspension": {"Front Spring Rate": -10, "Rear Spring Rate": -10},
+        },
+    },
+    "Ferrari 312 (1967)": {
+        "class": "Historic Formula / Open-Wheel", "engine": "rear", "drivetrain": "RWD",
+        "weight": 530, "power": 390, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Ferrari's V12 F1 car. More power than the DFV rivals but heavier. "
+                 "Beautiful engine note. Handles differently due to weight of the V12. "
+                 "Needs careful braking due to rear weight bias.",
+        "bias": {
+            "Brakes": {"Brake Bias": -1.0},
+            "Engine": {"Engine Braking": 5},
+        },
+    },
+    "McLaren M23 (1974)": {
+        "class": "Historic Formula / Open-Wheel", "engine": "rear", "drivetrain": "RWD",
+        "weight": 575, "power": 465, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "Emerson Fittipaldi and James Hunt's championship car. DFV-powered. "
+                 "One of the first F1 cars with significant wing development. "
+                 "Reliable and well-balanced. Good all-rounder for the era.",
+        "bias": {
+            "Aero": {"Front Wing Angle": 2, "Rear Wing Angle": 3},
+        },
+    },
+    "Tyrrell P34 (1976)": {
+        "class": "Historic Formula / Open-Wheel", "engine": "rear", "drivetrain": "RWD",
+        "weight": 580, "power": 465, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "The six-wheeled F1 car! Four small front wheels for reduced frontal area. "
+                 "DFV-powered. Won the 1976 Swedish GP. Unique braking characteristics — "
+                 "four front tires = massive front braking capacity. Higher brake bias than normal.",
+        "bias": {
+            "Brakes": {"Brake Bias": 2.0},
+        },
+    },
+    "Ferrari 312T (1975)": {
+        "class": "Historic Formula / Open-Wheel", "engine": "rear", "drivetrain": "RWD",
+        "weight": 575, "power": 495, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "Niki Lauda's championship car. Flat-12 engine, transverse gearbox. "
+                 "The flat-12 gave a lower center of gravity than the DFV V8. "
+                 "Excellent mechanical grip. The 'T' stands for transverse gearbox.",
+        "bias": {
+            "Suspension": {"Front Ride Height": -2, "Rear Ride Height": -2},
+        },
+    },
+    "Williams FW07 (1979)": {
+        "class": "Historic Formula / Open-Wheel", "engine": "rear", "drivetrain": "RWD",
+        "weight": 585, "power": 480, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Ground-effect Williams. Alan Jones' championship car. DFV-powered. "
+                 "Excellent ground-effect design by Patrick Head. Ride height critical — "
+                 "too high loses downforce completely. Very fast when it works.",
+        "bias": {
+            "Suspension": {"Front Ride Height": -8, "Rear Ride Height": -5},
+            "Aero": {"Front Wing Angle": 3, "Rear Wing Angle": 5},
+        },
+    },
+
+    # =====================================================================
+    # HISTORIC — 1970s Sports/GT Cars
+    # =====================================================================
+    "Porsche 935 (1977)": {
+        "class": "Historic GT / Sports Car", "engine": "rear", "drivetrain": "RWD",
+        "weight": 970, "power": 590, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "Turbo flat-6 Group 5 911 derivative. 'Moby Dick' variant had slant-nose body. "
+                 "Massive turbo lag then explosive power delivery. One of the most successful "
+                 "customer race cars ever. Rear-engine + turbo = very challenging.",
+        "bias": {
+            "Engine": {"Throttle Map": 2},
+            "Differential": {"Power (Accel) Lock": -10},
+            "Aero": {"Rear Wing Angle": 2},
+        },
+    },
+    "Porsche 934 (1976)": {
+        "class": "Historic GT / Sports Car", "engine": "rear", "drivetrain": "RWD",
+        "weight": 1120, "power": 485, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Group 4 turbo 911. Closer to road car than the 935. "
+                 "Turbo lag is significant. Heavier than the 935. "
+                 "More accessible but still demands respect with that rear engine + turbo combo.",
+        "bias": {
+            "Engine": {"Throttle Map": 2},
+            "Differential": {"Power (Accel) Lock": -5},
+        },
+    },
+    "BMW 3.0 CSL (1975)": {
+        "class": "Historic GT / Sports Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 1100, "power": 360, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "The 'Batmobile' with its wild aero kit. Inline-6 front-engine. "
+                 "Large rear wing and front splitter for the era. Dominated European touring car racing. "
+                 "Relatively well-balanced front-engine car. Good brakes.",
+        "bias": {
+            "Aero": {"Front Wing Angle": 2, "Rear Wing Angle": 3},
+        },
+    },
+    "De Tomaso Pantera Group 4 (1972)": {
+        "class": "Historic GT / Sports Car", "engine": "mid", "drivetrain": "RWD",
+        "weight": 1100, "power": 500, "aero": "none",
+        "has_abs": False, "has_tc": False,
+        "notes": "Italian chassis with Ford Cleveland V8. Mid-engine, huge power. "
+                 "Raced extensively in Group 4. Massive torque from the American V8. "
+                 "Better balanced than front-engine muscle but brutal on throttle.",
+        "bias": {
+            "Engine": {"Throttle Map": 1},
+        },
+    },
+
+    # =====================================================================
+    # HISTORIC — 1980s
+    # =====================================================================
+    "Porsche 956 (1982)": {
+        "class": "Group C / Can-Am / Historic Prototype", "engine": "rear", "drivetrain": "RWD",
+        "weight": 820, "power": 620, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "The original Group C ground-effect Porsche. Twin-turbo flat-6. "
+                 "Aluminum monocoque. Won Le Mans 1982-85. Ground effect is massive — "
+                 "ride height is the single most important setup parameter. "
+                 "Predecessor to the 962. Turbo lag requires smooth inputs.",
+        "bias": {
+            "Suspension": {"Front Ride Height": -5, "Rear Ride Height": -3},
+            "Engine": {"Throttle Map": 1},
+        },
+    },
+    "Lancia LC2 (1983)": {
+        "class": "Group C / Can-Am / Historic Prototype", "engine": "mid", "drivetrain": "RWD",
+        "weight": 850, "power": 750, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Ferrari V8 twin-turbo in a Lancia chassis. Incredibly powerful but unreliable. "
+                 "More power than the Porsche 956 but less developed aero. "
+                 "Challenging to drive — the power can overwhelm the grip.",
+        "bias": {
+            "Engine": {"Throttle Map": 2},
+            "Differential": {"Power (Accel) Lock": -5},
+        },
+    },
+    "Sauber-Mercedes C9 (1989)": {
+        "class": "Group C / Can-Am / Historic Prototype", "engine": "mid", "drivetrain": "RWD",
+        "weight": 905, "power": 720, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Mercedes-Benz twin-turbo V8 Group C car. Dominant in 1989, won Le Mans. "
+                 "More refined than earlier Group C cars. Better aero development. "
+                 "Silver color revived the Silver Arrows heritage.",
+        "bias": {},
+    },
+    "Mazda 787B (1991)": {
+        "class": "Group C / Can-Am / Historic Prototype", "engine": "mid", "drivetrain": "RWD",
+        "weight": 830, "power": 700, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "4-rotor Wankel rotary engine. Won Le Mans 1991 — the only rotary winner. "
+                 "Legendary exhaust note. Engine revs very freely. Light weight. "
+                 "The rotary's linear power delivery is actually easier to manage than turbo rivals.",
+        "bias": {
+            "Engine": {"Engine Braking": -5, "Throttle Map": -1},
+        },
+    },
+    "Toyota 88C-V (1988)": {
+        "class": "Group C / Can-Am / Historic Prototype", "engine": "mid", "drivetrain": "RWD",
+        "weight": 870, "power": 650, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Toyota's Group C contender. V8 twin-turbo. Strong but never quite beat the Porsches "
+                 "at Le Mans. Good chassis, reliable. Developed into later Le Mans cars.",
+        "bias": {},
+    },
+
+    # =====================================================================
+    # HISTORIC — 1980s-90s Touring Cars
+    # =====================================================================
+    "Ford Sierra RS500 Cosworth (1987)": {
+        "class": "Touring Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 1200, "power": 560, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "Turbo 4-cylinder Group A touring car. Dominated BTCC and Bathurst 1000. "
+                 "Huge turbo power in a relatively light package. Rear-wheel drive with turbo lag "
+                 "makes it a real handful. The whale-tail rear wing is iconic.",
+        "bias": {
+            "Engine": {"Throttle Map": 1},
+            "Aero": {"Rear Wing Angle": 2},
+        },
+    },
+    "BMW M3 E30 Group A (1987)": {
+        "class": "Touring Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 1100, "power": 300, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "Naturally aspirated inline-4 Group A. Dominated DTM and touring car racing globally. "
+                 "Less power than the turbo Sierra but more driveable and consistent. "
+                 "High-revving engine — keep it in the powerband. Beautiful handling.",
+        "bias": {
+            "Engine": {"Rev Limit": 10000},
+        },
+    },
+    "Mercedes 190E 2.5-16 Evo II (1992)": {
+        "class": "Touring Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 1100, "power": 370, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "DTM-spec Mercedes. Cosworth-developed 2.5L inline-4. "
+                 "The aggressive body kit was functional aero. Rear-wheel drive, no aids. "
+                 "Competitive with the M3 in DTM. Slightly more power, slightly heavier.",
+        "bias": {},
+    },
+    "Alfa Romeo 155 V6 TI (1993)": {
+        "class": "Touring Car", "engine": "front", "drivetrain": "FWD",
+        "weight": 1050, "power": 420, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "V6 DTM car that was controversially classified as FWD (debated — had rear drive too). "
+                 "Dominated 1993 DTM. If modeled as FWD: trail-brake rotation technique essential. "
+                 "Very quick but handling polarizes opinion.",
+        "bias": {
+            "Brakes": {"Brake Bias": -3.0},
+            "Differential": {"Coast (Decel) Lock": 10},
+        },
+    },
+    "Nissan Skyline GT-R R32 Group A (1990)": {
+        "class": "Touring Car", "engine": "front", "drivetrain": "AWD",
+        "weight": 1260, "power": 550, "aero": "low",
+        "has_abs": False, "has_tc": False,
+        "notes": "Godzilla. Twin-turbo RB26 inline-6 with ATTESA all-wheel-drive. "
+                 "Dominated Japanese touring car racing so thoroughly it was banned. "
+                 "AWD gives incredible traction but the car is heavy. Turbo lag is present.",
+        "bias": {
+            "Differential": {"Power (Accel) Lock": 15},
+            "Engine": {"Throttle Map": 1},
+        },
+    },
+
+    # =====================================================================
+    # HISTORIC — 1980s/90s Formula 1
+    # =====================================================================
+    "Williams FW14B (1992)": {
+        "class": "Open-Wheel / Formula", "engine": "mid", "drivetrain": "RWD",
+        "weight": 505, "power": 750, "aero": "very_high",
+        "has_abs": False, "has_tc": True,
+        "notes": "Nigel Mansell's dominant championship car. Renault V10. "
+                 "Active suspension, traction control, semi-auto gearbox. One of the most "
+                 "technologically advanced F1 cars ever. If modeled with active suspension, "
+                 "ride height is less critical. Incredibly fast.",
+        "bias": {
+            "Suspension": {"Front Ride Height": -5, "Rear Ride Height": -3},
+        },
+    },
+    "McLaren MP4/4 (1988)": {
+        "class": "Open-Wheel / Formula", "engine": "mid", "drivetrain": "RWD",
+        "weight": 540, "power": 685, "aero": "very_high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Most dominant F1 car ever — won 15 of 16 races. Honda turbo V6. "
+                 "Senna and Prost. Last year of turbo era. Incredible power but "
+                 "turbo lag in qualifying trim. Beautiful Gordon Murray design.",
+        "bias": {
+            "Engine": {"Throttle Map": 1},
+        },
+    },
+    "Lotus 98T (1986)": {
+        "class": "Open-Wheel / Formula", "engine": "mid", "drivetrain": "RWD",
+        "weight": 540, "power": 1000, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Renault turbo V6 with over 1000hp in qualifying trim. Ayrton Senna's car. "
+                 "Insane power-to-weight. The turbo lag then sudden power delivery is lethal. "
+                 "No traction aids. Arguably the scariest F1 car to drive.",
+        "bias": {
+            "Engine": {"Throttle Map": 2},
+            "Differential": {"Power (Accel) Lock": -10},
+        },
+    },
+    "Ferrari 640 (1989)": {
+        "class": "Open-Wheel / Formula", "engine": "mid", "drivetrain": "RWD",
+        "weight": 505, "power": 660, "aero": "very_high",
+        "has_abs": False, "has_tc": False,
+        "notes": "First F1 car with a semi-automatic gearbox. V12 engine. "
+                 "Beautiful John Barnard design. Nigel Mansell won on debut at Brazil. "
+                 "The V12 gives incredible throttle response and engine braking.",
+        "bias": {
+            "Engine": {"Engine Braking": 5},
+        },
+    },
+    "Brabham BT52 (1983)": {
+        "class": "Open-Wheel / Formula", "engine": "mid", "drivetrain": "RWD",
+        "weight": 540, "power": 640, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Nelson Piquet's championship car. BMW turbo inline-4. "
+                 "Arrow-shaped design by Gordon Murray. The turbo could produce massive boost "
+                 "in qualifying. Pioneered refuelling pit stops to run lighter.",
+        "bias": {
+            "Engine": {"Throttle Map": 1},
+        },
+    },
+
+    # =====================================================================
+    # HISTORIC — 1990s GT Racing
+    # =====================================================================
+    "McLaren F1 GTR (1995)": {
+        "class": "Historic GT / Sports Car", "engine": "mid", "drivetrain": "RWD",
+        "weight": 1050, "power": 600, "aero": "medium",
+        "has_abs": False, "has_tc": False,
+        "notes": "BMW V12 mid-engine. Won Le Mans 1995. Road car converted to racer. "
+                 "Central driving position (in road spec). Naturally aspirated so linear power. "
+                 "Carbon fiber construction. One of the greatest GT cars ever built. "
+                 "The 'long tail' version has more downforce.",
+        "bias": {
+            "Aero": {"Rear Diffuser": 2},
+        },
+    },
+    "Porsche 911 GT1 (1998)": {
+        "class": "Historic GT / Sports Car", "engine": "mid", "drivetrain": "RWD",
+        "weight": 950, "power": 550, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Mid-engine turbo flat-6 homologation special. Won Le Mans 1998. "
+                 "Despite the 911 name, it's essentially a prototype with 911 headlights. "
+                 "Twin-turbo needs smooth throttle. Very high downforce for a 'GT' car.",
+        "bias": {
+            "Engine": {"Throttle Map": 1},
+            "Suspension": {"Front Ride Height": -3, "Rear Ride Height": -3},
+        },
+    },
+    "Mercedes CLK-GTR (1997)": {
+        "class": "Historic GT / Sports Car", "engine": "front", "drivetrain": "RWD",
+        "weight": 1050, "power": 600, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "V12 GT1 homologation car. Won 1997 FIA GT championship. "
+                 "Front-mid engine layout. Imposing and fast. "
+                 "The Mercedes had the most power of the GT1 cars.",
+        "bias": {},
+    },
+    "Toyota GT-One TS020 (1998)": {
+        "class": "Group C / Can-Am / Historic Prototype", "engine": "mid", "drivetrain": "RWD",
+        "weight": 900, "power": 600, "aero": "very_high",
+        "has_abs": False, "has_tc": True,
+        "notes": "Twin-turbo V8 Le Mans car. Incredibly fast — led Le Mans but never won. "
+                 "Massive downforce, very aero-dependent. Ride height critical. "
+                 "One of the fastest GT1-era cars. Had traction control.",
+        "bias": {
+            "Suspension": {"Front Ride Height": -5, "Rear Ride Height": -3},
+        },
+    },
+    "Nissan R390 GT1 (1998)": {
+        "class": "Historic GT / Sports Car", "engine": "mid", "drivetrain": "RWD",
+        "weight": 1050, "power": 550, "aero": "high",
+        "has_abs": False, "has_tc": False,
+        "notes": "Twin-turbo V8 GT1 car based on a Tom Walkinshaw design. "
+                 "Finished 3rd at Le Mans 1998. Reliable but not quite fast enough. "
+                 "Distinctive Japanese styling. Good all-rounder.",
+        "bias": {},
+    },
+    "BMW V12 LMR (1999)": {
+        "class": "Group C / Can-Am / Historic Prototype", "engine": "mid", "drivetrain": "RWD",
+        "weight": 900, "power": 580, "aero": "very_high",
+        "has_abs": False, "has_tc": True,
+        "notes": "V12 Le Mans winner 1999. Open-top prototype. Williams-designed aero. "
+                 "Naturally aspirated V12 — linear power delivery. TC available. "
+                 "Clean aero design. Won in unusual circumstances (Mercedes flip).",
+        "bias": {
+            "Engine": {"Engine Braking": 5},
+        },
+    },
 }
 
 
