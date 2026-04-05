@@ -9,7 +9,11 @@ from tkinter import ttk, messagebox, filedialog
 from copy import deepcopy
 from setup_knowledge import (CAR_CLASSES, TRACK_TYPES, HANDLING_PROBLEMS,
                              SETUP_WORKFLOW, generate_baseline,
+                             generate_smart_baseline,
                              get_problem_recommendations)
+from rf2_cars import CARS, find_car
+from rf2_tracks import TRACKS, find_track
+from rf2_meta import RF2_META, get_meta_tips
 
 # ---------------------------------------------------------------------------
 # Setup parameter definitions
@@ -289,43 +293,89 @@ class RF2SetupApp:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        ttk.Label(frame, text="Setup Advisor — Generate an Intelligent Baseline",
+        ttk.Label(frame, text="Setup Advisor — Just Type Your Car and Track",
                   font=("TkDefaultFont", 14, "bold")).pack(anchor="w", pady=(0, 10))
         ttk.Label(frame, text=(
-            "Select your car class and track type below. The advisor will generate a "
-            "physics-informed baseline setup tailored to your combination, with specific "
-            "warnings and tips for your car type."
+            "Type the name of your car and track below. The advisor knows specific cars "
+            "and tracks, their physics characteristics, and rF2's simulation meta. "
+            "It will generate the right baseline setup automatically.\n\n"
+            "If your car isn't in the database, select a car class as a fallback."
         ), wraplength=800).pack(anchor="w", pady=(0, 15))
 
-        # Car class selector
-        car_frame = ttk.LabelFrame(frame, text="Car Class", padding=10)
+        # ---- Car entry with search ----
+        car_frame = ttk.LabelFrame(frame, text="Car (type to search)", padding=10)
         car_frame.pack(fill=tk.X, pady=5)
+
+        car_entry_frame = ttk.Frame(car_frame)
+        car_entry_frame.pack(fill=tk.X)
+
+        self.car_entry_var = tk.StringVar()
+        self.car_entry = ttk.Entry(car_entry_frame, textvariable=self.car_entry_var, width=45)
+        self.car_entry.pack(side=tk.LEFT, padx=(0, 5))
+        self.car_entry.bind("<KeyRelease>", self._on_car_search)
+
+        ttk.Label(car_entry_frame, text="or class:").pack(side=tk.LEFT, padx=(10, 5))
         self.car_class_var = tk.StringVar()
-        car_names = list(CAR_CLASSES.keys())
-        self.car_class_combo = ttk.Combobox(car_frame, textvariable=self.car_class_var,
-                                            values=car_names, state="readonly", width=40)
-        self.car_class_combo.pack(side=tk.LEFT, padx=(0, 10))
-        self.car_class_combo.bind("<<ComboboxSelected>>", self._on_car_class_selected)
-        self.car_desc_var = tk.StringVar(value="Select a car class to see its description.")
+        car_class_names = list(CAR_CLASSES.keys())
+        self.car_class_combo = ttk.Combobox(car_entry_frame, textvariable=self.car_class_var,
+                                            values=car_class_names, state="readonly", width=30)
+        self.car_class_combo.pack(side=tk.LEFT)
+
+        # Search results listbox
+        self.car_results_frame = ttk.Frame(car_frame)
+        self.car_results_frame.pack(fill=tk.X, pady=(5, 0))
+        self.car_listbox = tk.Listbox(self.car_results_frame, height=4,
+                                       font=("TkDefaultFont", 9))
+        self.car_listbox.pack(fill=tk.X)
+        self.car_listbox.bind("<<ListboxSelect>>", self._on_car_selected)
+        self._car_search_results = []
+
+        self.car_desc_var = tk.StringVar(value="Type a car name (e.g. 'Porsche 911', 'Lotus 49', 'BMW GT3')...")
         ttk.Label(car_frame, textvariable=self.car_desc_var,
-                  wraplength=500, foreground="gray30").pack(side=tk.LEFT, fill=tk.X, expand=True)
+                  wraplength=800, foreground="gray30").pack(anchor="w", pady=(5, 0))
 
-        # Track type selector
-        track_frame = ttk.LabelFrame(frame, text="Track Type", padding=10)
+        # ---- Track entry with search ----
+        track_frame = ttk.LabelFrame(frame, text="Track (type to search)", padding=10)
         track_frame.pack(fill=tk.X, pady=5)
-        self.track_type_var = tk.StringVar()
-        track_names = list(TRACK_TYPES.keys())
-        self.track_type_combo = ttk.Combobox(track_frame, textvariable=self.track_type_var,
-                                             values=track_names, state="readonly", width=40)
-        self.track_type_combo.pack(side=tk.LEFT, padx=(0, 10))
-        self.track_type_combo.bind("<<ComboboxSelected>>", self._on_track_type_selected)
-        self.track_desc_var = tk.StringVar(value="Select a track type to see its description.")
-        ttk.Label(track_frame, textvariable=self.track_desc_var,
-                  wraplength=500, foreground="gray30").pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        # Generate button
+        track_entry_frame = ttk.Frame(track_frame)
+        track_entry_frame.pack(fill=tk.X)
+
+        self.track_entry_var = tk.StringVar()
+        self.track_entry = ttk.Entry(track_entry_frame, textvariable=self.track_entry_var, width=45)
+        self.track_entry.pack(side=tk.LEFT, padx=(0, 5))
+        self.track_entry.bind("<KeyRelease>", self._on_track_search)
+
+        ttk.Label(track_entry_frame, text="or type:").pack(side=tk.LEFT, padx=(10, 5))
+        self.track_type_var = tk.StringVar()
+        track_type_names = list(TRACK_TYPES.keys())
+        self.track_type_combo = ttk.Combobox(track_entry_frame, textvariable=self.track_type_var,
+                                             values=track_type_names, state="readonly", width=30)
+        self.track_type_combo.pack(side=tk.LEFT)
+
+        # Search results listbox
+        self.track_results_frame = ttk.Frame(track_frame)
+        self.track_results_frame.pack(fill=tk.X, pady=(5, 0))
+        self.track_listbox = tk.Listbox(self.track_results_frame, height=4,
+                                         font=("TkDefaultFont", 9))
+        self.track_listbox.pack(fill=tk.X)
+        self.track_listbox.bind("<<ListboxSelect>>", self._on_track_selected)
+        self._track_search_results = []
+
+        self.track_desc_var = tk.StringVar(value="Type a track name (e.g. 'Spa', 'Nordschleife', 'Monaco')...")
+        ttk.Label(track_frame, textvariable=self.track_desc_var,
+                  wraplength=800, foreground="gray30").pack(anchor="w", pady=(5, 0))
+
+        # ---- Meta checkbox ----
+        meta_frame = ttk.Frame(frame)
+        meta_frame.pack(fill=tk.X, pady=5)
+        self.apply_meta_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(meta_frame, text="Apply rF2 meta optimizations (min pressures, camber, brake ducts, toe)",
+                        variable=self.apply_meta_var).pack(side=tk.LEFT)
+
+        # ---- Generate button ----
         btn_frame = ttk.Frame(frame)
-        btn_frame.pack(fill=tk.X, pady=15)
+        btn_frame.pack(fill=tk.X, pady=10)
         ttk.Button(btn_frame, text="Generate Baseline Setup",
                    command=self._generate_baseline).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Label(btn_frame, text="This will overwrite your current setup!",
@@ -339,37 +389,116 @@ class RF2SetupApp:
         self.advisor_results.tag_configure("warning", foreground="dark red",
                                            font=("TkDefaultFont", 9, "bold"))
         self.advisor_results.tag_configure("tip", foreground="dark green")
+        self.advisor_results.tag_configure("meta", foreground="purple",
+                                           font=("TkDefaultFont", 9, "italic"))
+
+        # Stored selected data
+        self._selected_car_data = None
+        self._selected_car_name = None
+        self._selected_track_data = None
+        self._selected_track_name = None
 
         return outer
 
-    def _on_car_class_selected(self, event=None):
-        name = self.car_class_var.get()
-        if name in CAR_CLASSES:
-            self.car_desc_var.set(CAR_CLASSES[name]["description"])
+    def _on_car_search(self, event=None):
+        query = self.car_entry_var.get()
+        self.car_listbox.delete(0, tk.END)
+        self._car_search_results = []
+        self._selected_car_data = None
+        self._selected_car_name = None
+        if len(query) >= 2:
+            results = find_car(query)[:8]
+            self._car_search_results = results
+            for name, data in results:
+                self.car_listbox.insert(tk.END, f"{name}  [{data['class']}]")
+            if results:
+                self.car_desc_var.set(f"Found {len(results)} car(s). Click one to select.")
+            else:
+                self.car_desc_var.set("No cars found. Use the class dropdown as fallback.")
+        else:
+            self.car_desc_var.set("Type at least 2 characters to search...")
 
-    def _on_track_type_selected(self, event=None):
-        name = self.track_type_var.get()
-        if name in TRACK_TYPES:
-            self.track_desc_var.set(TRACK_TYPES[name]["description"])
+    def _on_car_selected(self, event=None):
+        sel = self.car_listbox.curselection()
+        if sel and sel[0] < len(self._car_search_results):
+            name, data = self._car_search_results[sel[0]]
+            self._selected_car_name = name
+            self._selected_car_data = data
+            self.car_entry_var.set(name)
+            desc = f"{name} — {data['class']} | {data['engine']}-engine {data['drivetrain']} | "
+            desc += f"{data['power']}HP / {data['weight']}kg | Aero: {data['aero']}"
+            if not data.get('has_abs'):
+                desc += " | NO ABS"
+            if not data.get('has_tc'):
+                desc += " | NO TC"
+            self.car_desc_var.set(desc)
+
+    def _on_track_search(self, event=None):
+        query = self.track_entry_var.get()
+        self.track_listbox.delete(0, tk.END)
+        self._track_search_results = []
+        self._selected_track_data = None
+        self._selected_track_name = None
+        if len(query) >= 2:
+            results = find_track(query)[:8]
+            self._track_search_results = results
+            for name, data in results:
+                self.track_listbox.insert(tk.END, f"{name}  [{data['type']}]")
+            if results:
+                self.track_desc_var.set(f"Found {len(results)} track(s). Click one to select.")
+            else:
+                self.track_desc_var.set("No tracks found. Use the type dropdown as fallback.")
+        else:
+            self.track_desc_var.set("Type at least 2 characters to search...")
+
+    def _on_track_selected(self, event=None):
+        sel = self.track_listbox.curselection()
+        if sel and sel[0] < len(self._track_search_results):
+            name, data = self._track_search_results[sel[0]]
+            self._selected_track_name = name
+            self._selected_track_data = data
+            self.track_entry_var.set(name)
+            desc = f"{name} — {data['type']} | {data['length_km']}km | "
+            desc += f"Surface: {data['surface']}/5 | Top speed importance: {data['top_speed']}/5"
+            self.track_desc_var.set(desc)
 
     def _generate_baseline(self):
-        car_class = self.car_class_var.get()
-        track_type = self.track_type_var.get()
-        if not car_class:
-            messagebox.showwarning("Select Car Class",
-                                   "Please select a car class before generating a baseline.")
-            return
+        # Determine car source: specific car DB entry, or class fallback
+        car_data = self._selected_car_data
+        car_name = self._selected_car_name
+        track_data = self._selected_track_data
+        track_name = self._selected_track_name
+        apply_meta = self.apply_meta_var.get()
 
-        setup, tips, warnings = generate_baseline(car_class, track_type or None)
-        if setup is None:
-            messagebox.showerror("Error", "\n".join(warnings))
+        if car_data:
+            # Smart generation: specific car + optional specific track
+            setup, tips, warnings, meta_changes = generate_smart_baseline(
+                car_data, track_data, apply_meta)
+            label = car_name
+            if track_name:
+                label += f" @ {track_name}"
+        elif self.car_class_var.get():
+            # Fallback: class + optional track type
+            car_class = self.car_class_var.get()
+            track_type = self.track_type_var.get() or None
+            setup, tips, warnings = generate_baseline(car_class, track_type)
+            meta_changes = []
+            if setup is None:
+                messagebox.showerror("Error", "\n".join(warnings))
+                return
+            if apply_meta:
+                from rf2_meta import apply_meta_to_setup
+                meta_changes = apply_meta_to_setup(setup)
+            label = car_class
+            if track_type:
+                label += f" @ {track_type}"
+        else:
+            messagebox.showwarning("Select a Car",
+                                   "Search for a car by name, or select a car class from the dropdown.")
             return
 
         self.setup = setup
         self._apply_setup_to_ui()
-        label = f"{car_class}"
-        if track_type:
-            label += f" @ {track_type}"
         self.status_var.set(f"rFactor 2 Setup Editor — {label}")
 
         # Show results
@@ -379,18 +508,23 @@ class RF2SetupApp:
         t.insert(tk.END, f"Baseline Generated: {label}\n\n", "heading")
 
         if warnings:
-            t.insert(tk.END, "IMPORTANT WARNINGS:\n", "heading")
+            t.insert(tk.END, "CAR & TRACK NOTES:\n", "heading")
             for w in warnings:
-                t.insert(tk.END, f"  * {w}\n", "warning")
+                t.insert(tk.END, f"  * {w}\n\n", "warning")
             t.insert(tk.END, "\n")
+
+        if meta_changes:
+            t.insert(tk.END, "rF2 META APPLIED:\n", "heading")
+            for desc, explanation in meta_changes:
+                t.insert(tk.END, f"  * {desc}\n", "meta")
+                t.insert(tk.END, f"    {explanation}\n\n")
 
         if tips:
             t.insert(tk.END, "TRACK-SPECIFIC TIPS:\n", "heading")
             for tip in tips:
-                t.insert(tk.END, f"  * {tip}\n", "tip")
-            t.insert(tk.END, "\n")
+                t.insert(tk.END, f"  * {tip}\n\n", "tip")
 
-        t.insert(tk.END, "NEXT STEPS:\n", "heading")
+        t.insert(tk.END, "\nNEXT STEPS:\n", "heading")
         t.insert(tk.END, (
             "  1. Save this baseline (File > Save Setup) before making changes.\n"
             "  2. Go to the Workflow Guide tab for step-by-step tuning instructions.\n"

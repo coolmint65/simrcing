@@ -1024,6 +1024,119 @@ def generate_baseline(car_class_name, track_type_name):
     return setup, tips, warnings
 
 
+def generate_smart_baseline(car_data, track_data=None, apply_meta=True):
+    """Generate a baseline from specific car + track data (from rf2_cars/rf2_tracks).
+
+    car_data: dict from rf2_cars.CARS
+    track_data: dict from rf2_tracks.TRACKS (optional)
+    apply_meta: whether to apply rF2 meta optimizations
+
+    Returns (setup_dict, tips_list, warnings_list, meta_changes_list).
+    """
+    from rf2_setup import SETUP_CATEGORIES, get_default_setup
+
+    # 1. Start from the car's class baseline
+    car_class_name = car_data.get("class", "GT3")
+    car_class = CAR_CLASSES.get(car_class_name)
+    if not car_class:
+        # Fallback: find closest match
+        for cls_name in CAR_CLASSES:
+            if car_class_name.lower() in cls_name.lower():
+                car_class = CAR_CLASSES[cls_name]
+                break
+        if not car_class:
+            car_class = list(CAR_CLASSES.values())[0]
+
+    setup = get_default_setup()
+    tips = []
+    warnings = []
+
+    # Apply car class defaults
+    for cat, params in car_class["defaults"].items():
+        for name, val in params.items():
+            if cat in setup and name in setup[cat]:
+                setup[cat][name] = val
+
+    # 2. Apply car-specific bias deltas
+    for cat, params in car_data.get("bias", {}).items():
+        for name, delta in params.items():
+            if cat in setup and name in setup[cat]:
+                info = SETUP_CATEGORIES.get(cat, {}).get(name)
+                if info:
+                    vmin, vmax, step = info[:3]
+                    new_val = setup[cat][name] + delta
+                    new_val = max(vmin, min(vmax, new_val))
+                    if isinstance(step, float):
+                        decimals = len(str(step).split('.')[-1])
+                        new_val = round(round((new_val - vmin) / step) * step + vmin, decimals)
+                    else:
+                        new_val = int(round((new_val - vmin) / step) * step + vmin)
+                    setup[cat][name] = new_val
+
+    # 3. Apply track type deltas (from TRACK_TYPES based on track's type)
+    if track_data:
+        track_type_name = track_data.get("type", "")
+        track_type = TRACK_TYPES.get(track_type_name)
+        if track_type:
+            tips.extend(track_type["tips"])
+            for cat, params in track_type.get("deltas", {}).items():
+                for name, delta in params.items():
+                    if cat in setup and name in setup[cat]:
+                        info = SETUP_CATEGORIES.get(cat, {}).get(name)
+                        if info:
+                            vmin, vmax, step = info[:3]
+                            new_val = setup[cat][name] + delta
+                            new_val = max(vmin, min(vmax, new_val))
+                            if isinstance(step, float):
+                                decimals = len(str(step).split('.')[-1])
+                                new_val = round(round((new_val - vmin) / step) * step + vmin, decimals)
+                            else:
+                                new_val = int(round((new_val - vmin) / step) * step + vmin)
+                            setup[cat][name] = new_val
+
+        # 4. Apply track-specific bias deltas (on top of track type)
+        for cat, params in track_data.get("bias", {}).items():
+            for name, delta in params.items():
+                if cat in setup and name in setup[cat]:
+                    info = SETUP_CATEGORIES.get(cat, {}).get(name)
+                    if info:
+                        vmin, vmax, step = info[:3]
+                        new_val = setup[cat][name] + delta
+                        new_val = max(vmin, min(vmax, new_val))
+                        if isinstance(step, float):
+                            decimals = len(str(step).split('.')[-1])
+                            new_val = round(round((new_val - vmin) / step) * step + vmin, decimals)
+                        else:
+                            new_val = int(round((new_val - vmin) / step) * step + vmin)
+                        setup[cat][name] = new_val
+
+        if track_data.get("notes"):
+            tips.insert(0, f"TRACK NOTE: {track_data['notes']}")
+
+    # 5. Apply rF2 meta if requested
+    meta_changes = []
+    if apply_meta:
+        from rf2_meta import apply_meta_to_setup
+        meta_changes = apply_meta_to_setup(setup, car_data)
+
+    # 6. Generate warnings
+    if not car_data.get("has_abs", True):
+        warnings.append("This car has NO ABS. Use moderate brake pressure and forward "
+                        "brake bias. Threshold braking technique is essential.")
+    if not car_data.get("has_tc", True):
+        warnings.append("This car has NO traction control. Be smooth on throttle application, "
+                        "especially on corner exit.")
+    if car_data.get("aero") == "none":
+        warnings.append("This car has NO aerodynamic downforce. All grip comes from "
+                        "mechanical sources. Focus on springs, dampers, and tire pressures.")
+    elif car_data.get("aero") in ("very_high", "extreme"):
+        warnings.append("This car is AERO SENSITIVE. Small ride height changes have large effects.")
+    if car_data.get("notes"):
+        warnings.insert(0, f"CAR: {car_data['notes']}")
+
+    return setup, tips, warnings, meta_changes
+
+
 def get_problem_recommendations(problem_name):
     """Return the diagnosis info and list of recommended changes for a handling problem."""
     problem = HANDLING_PROBLEMS.get(problem_name)
