@@ -7,6 +7,9 @@ import os
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from copy import deepcopy
+from setup_knowledge import (CAR_CLASSES, TRACK_TYPES, HANDLING_PROBLEMS,
+                             SETUP_WORKFLOW, generate_baseline,
+                             get_problem_recommendations)
 
 # ---------------------------------------------------------------------------
 # Setup parameter definitions
@@ -249,9 +252,330 @@ class RF2SetupApp:
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
+        # Advisor tab (first!) — baseline generator
+        advisor_tab = self._build_advisor_tab()
+        self.notebook.add(advisor_tab, text=">> Advisor")
+
+        # Problem Solver tab
+        problem_tab = self._build_problem_solver_tab()
+        self.notebook.add(problem_tab, text=">> Problem Solver")
+
+        # Workflow tab
+        workflow_tab = self._build_workflow_tab()
+        self.notebook.add(workflow_tab, text=">> Workflow Guide")
+
+        # Separator
+        sep_frame = ttk.Frame(self.notebook)
+        self.notebook.add(sep_frame, text="---", state="disabled")
+
+        # Setup category tabs
         for cat, params in SETUP_CATEGORIES.items():
             tab = self._build_category_tab(cat, params)
             self.notebook.add(tab, text=cat)
+
+    # ---- Advisor Tab ----
+    def _build_advisor_tab(self):
+        outer = ttk.Frame(self.notebook)
+        canvas = tk.Canvas(outer, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(outer, orient=tk.VERTICAL, command=canvas.yview)
+        frame = ttk.Frame(canvas, padding=15)
+        frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        for evt in ("<MouseWheel>",):
+            canvas.bind(evt, lambda e: canvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
+        for evt, d in (("<Button-4>", -1), ("<Button-5>", 1)):
+            canvas.bind(evt, lambda e, delta=d: canvas.yview_scroll(delta, "units"))
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        ttk.Label(frame, text="Setup Advisor — Generate an Intelligent Baseline",
+                  font=("TkDefaultFont", 14, "bold")).pack(anchor="w", pady=(0, 10))
+        ttk.Label(frame, text=(
+            "Select your car class and track type below. The advisor will generate a "
+            "physics-informed baseline setup tailored to your combination, with specific "
+            "warnings and tips for your car type."
+        ), wraplength=800).pack(anchor="w", pady=(0, 15))
+
+        # Car class selector
+        car_frame = ttk.LabelFrame(frame, text="Car Class", padding=10)
+        car_frame.pack(fill=tk.X, pady=5)
+        self.car_class_var = tk.StringVar()
+        car_names = list(CAR_CLASSES.keys())
+        self.car_class_combo = ttk.Combobox(car_frame, textvariable=self.car_class_var,
+                                            values=car_names, state="readonly", width=40)
+        self.car_class_combo.pack(side=tk.LEFT, padx=(0, 10))
+        self.car_class_combo.bind("<<ComboboxSelected>>", self._on_car_class_selected)
+        self.car_desc_var = tk.StringVar(value="Select a car class to see its description.")
+        ttk.Label(car_frame, textvariable=self.car_desc_var,
+                  wraplength=500, foreground="gray30").pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        # Track type selector
+        track_frame = ttk.LabelFrame(frame, text="Track Type", padding=10)
+        track_frame.pack(fill=tk.X, pady=5)
+        self.track_type_var = tk.StringVar()
+        track_names = list(TRACK_TYPES.keys())
+        self.track_type_combo = ttk.Combobox(track_frame, textvariable=self.track_type_var,
+                                             values=track_names, state="readonly", width=40)
+        self.track_type_combo.pack(side=tk.LEFT, padx=(0, 10))
+        self.track_type_combo.bind("<<ComboboxSelected>>", self._on_track_type_selected)
+        self.track_desc_var = tk.StringVar(value="Select a track type to see its description.")
+        ttk.Label(track_frame, textvariable=self.track_desc_var,
+                  wraplength=500, foreground="gray30").pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        # Generate button
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill=tk.X, pady=15)
+        ttk.Button(btn_frame, text="Generate Baseline Setup",
+                   command=self._generate_baseline).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(btn_frame, text="This will overwrite your current setup!",
+                  foreground="red").pack(side=tk.LEFT)
+
+        # Results area
+        self.advisor_results = tk.Text(frame, height=20, wrap=tk.WORD, state=tk.DISABLED,
+                                       font=("TkDefaultFont", 9))
+        self.advisor_results.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.advisor_results.tag_configure("heading", font=("TkDefaultFont", 11, "bold"))
+        self.advisor_results.tag_configure("warning", foreground="dark red",
+                                           font=("TkDefaultFont", 9, "bold"))
+        self.advisor_results.tag_configure("tip", foreground="dark green")
+
+        return outer
+
+    def _on_car_class_selected(self, event=None):
+        name = self.car_class_var.get()
+        if name in CAR_CLASSES:
+            self.car_desc_var.set(CAR_CLASSES[name]["description"])
+
+    def _on_track_type_selected(self, event=None):
+        name = self.track_type_var.get()
+        if name in TRACK_TYPES:
+            self.track_desc_var.set(TRACK_TYPES[name]["description"])
+
+    def _generate_baseline(self):
+        car_class = self.car_class_var.get()
+        track_type = self.track_type_var.get()
+        if not car_class:
+            messagebox.showwarning("Select Car Class",
+                                   "Please select a car class before generating a baseline.")
+            return
+
+        setup, tips, warnings = generate_baseline(car_class, track_type or None)
+        if setup is None:
+            messagebox.showerror("Error", "\n".join(warnings))
+            return
+
+        self.setup = setup
+        self._apply_setup_to_ui()
+        label = f"{car_class}"
+        if track_type:
+            label += f" @ {track_type}"
+        self.status_var.set(f"rFactor 2 Setup Editor — {label}")
+
+        # Show results
+        t = self.advisor_results
+        t.config(state=tk.NORMAL)
+        t.delete("1.0", tk.END)
+        t.insert(tk.END, f"Baseline Generated: {label}\n\n", "heading")
+
+        if warnings:
+            t.insert(tk.END, "IMPORTANT WARNINGS:\n", "heading")
+            for w in warnings:
+                t.insert(tk.END, f"  * {w}\n", "warning")
+            t.insert(tk.END, "\n")
+
+        if tips:
+            t.insert(tk.END, "TRACK-SPECIFIC TIPS:\n", "heading")
+            for tip in tips:
+                t.insert(tk.END, f"  * {tip}\n", "tip")
+            t.insert(tk.END, "\n")
+
+        t.insert(tk.END, "NEXT STEPS:\n", "heading")
+        t.insert(tk.END, (
+            "  1. Save this baseline (File > Save Setup) before making changes.\n"
+            "  2. Go to the Workflow Guide tab for step-by-step tuning instructions.\n"
+            "  3. Run 5-10 laps, then use the Problem Solver tab to fix handling issues.\n"
+            "  4. Use Compare to see your changes vs the baseline.\n"
+        ))
+        t.config(state=tk.DISABLED)
+
+    # ---- Problem Solver Tab ----
+    def _build_problem_solver_tab(self):
+        outer = ttk.Frame(self.notebook)
+        canvas = tk.Canvas(outer, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(outer, orient=tk.VERTICAL, command=canvas.yview)
+        frame = ttk.Frame(canvas, padding=15)
+        frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        for evt in ("<MouseWheel>",):
+            canvas.bind(evt, lambda e: canvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
+        for evt, d in (("<Button-4>", -1), ("<Button-5>", 1)):
+            canvas.bind(evt, lambda e, delta=d: canvas.yview_scroll(delta, "units"))
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        ttk.Label(frame, text="Handling Problem Solver",
+                  font=("TkDefaultFont", 14, "bold")).pack(anchor="w", pady=(0, 5))
+        ttk.Label(frame, text=(
+            "Select the handling problem you're experiencing. The solver will diagnose "
+            "the likely causes and recommend specific parameter changes to fix it. "
+            "Apply changes one at a time and test 2-3 laps between each."
+        ), wraplength=800).pack(anchor="w", pady=(0, 15))
+
+        # Problem selector
+        sel_frame = ttk.LabelFrame(frame, text="What problem are you experiencing?", padding=10)
+        sel_frame.pack(fill=tk.X, pady=5)
+        self.problem_var = tk.StringVar()
+        problem_names = list(HANDLING_PROBLEMS.keys())
+        self.problem_combo = ttk.Combobox(sel_frame, textvariable=self.problem_var,
+                                          values=problem_names, state="readonly", width=50)
+        self.problem_combo.pack(side=tk.LEFT, padx=(0, 10))
+
+        ttk.Button(sel_frame, text="Diagnose & Recommend",
+                   command=self._diagnose_problem).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(sel_frame, text="Apply Top Fix",
+                   command=self._apply_top_fix).pack(side=tk.LEFT)
+
+        # Results
+        self.problem_results = tk.Text(frame, height=25, wrap=tk.WORD, state=tk.DISABLED,
+                                        font=("TkDefaultFont", 9))
+        self.problem_results.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.problem_results.tag_configure("heading", font=("TkDefaultFont", 11, "bold"))
+        self.problem_results.tag_configure("cause", foreground="dark red")
+        self.problem_results.tag_configure("fix", foreground="dark blue",
+                                            font=("TkDefaultFont", 9, "bold"))
+        self.problem_results.tag_configure("explain", foreground="gray30")
+        self.problem_results.tag_configure("current", foreground="gray50")
+
+        self._current_recommendations = []
+        return outer
+
+    def _diagnose_problem(self):
+        name = self.problem_var.get()
+        if not name:
+            messagebox.showwarning("Select Problem", "Please select a handling problem first.")
+            return
+        problem = get_problem_recommendations(name)
+        if not problem:
+            return
+
+        t = self.problem_results
+        t.config(state=tk.NORMAL)
+        t.delete("1.0", tk.END)
+
+        t.insert(tk.END, f"DIAGNOSIS: {name}\n\n", "heading")
+        t.insert(tk.END, f"{problem['description']}\n\n")
+        t.insert(tk.END, "Likely causes: ", "heading")
+        t.insert(tk.END, f"{problem['causes']}\n\n", "cause")
+
+        t.insert(tk.END, "RECOMMENDED CHANGES (in priority order):\n\n", "heading")
+
+        self._current_recommendations = problem["recommendations"]
+        for i, (cat, param, delta, explanation) in enumerate(problem["recommendations"], 1):
+            current = self.setup.get(cat, {}).get(param, "?")
+            info = SETUP_CATEGORIES.get(cat, {}).get(param)
+            if info:
+                vmin, vmax, step = info[:3]
+                new_val = current + delta if current != "?" else delta
+                new_val = max(vmin, min(vmax, new_val))
+                if isinstance(step, float):
+                    decimals = len(str(step).split('.')[-1])
+                    new_val = round(new_val, decimals)
+                    curr_str = f"{current:.{decimals}f}" if current != "?" else "?"
+                    new_str = f"{new_val:.{decimals}f}"
+                else:
+                    new_val = int(round(new_val))
+                    curr_str = str(current)
+                    new_str = str(new_val)
+                sign = "+" if delta > 0 else ""
+                t.insert(tk.END, f"  {i}. [{cat}] {param}: {curr_str} -> {new_str} ({sign}{delta})\n", "fix")
+            else:
+                t.insert(tk.END, f"  {i}. [{cat}] {param}: change by {delta}\n", "fix")
+            t.insert(tk.END, f"     {explanation}\n\n", "explain")
+
+        t.insert(tk.END, "\nTIP: ", "heading")
+        t.insert(tk.END, (
+            "Click 'Apply Top Fix' to apply the #1 recommendation automatically. "
+            "Test for 2-3 laps, then come back and diagnose again if needed.\n"
+        ))
+        t.config(state=tk.DISABLED)
+
+    def _apply_top_fix(self):
+        if not self._current_recommendations:
+            messagebox.showinfo("No Recommendations", "Diagnose a problem first.")
+            return
+        cat, param, delta, explanation = self._current_recommendations[0]
+        current = self.setup.get(cat, {}).get(param)
+        if current is None:
+            return
+        info = SETUP_CATEGORIES.get(cat, {}).get(param)
+        if not info:
+            return
+        vmin, vmax, step = info[:3]
+        new_val = current + delta
+        new_val = max(vmin, min(vmax, new_val))
+        if isinstance(step, float):
+            decimals = len(str(step).split('.')[-1])
+            new_val = round(new_val, decimals)
+        else:
+            new_val = int(round(new_val))
+
+        self.setup[cat][param] = new_val
+        self._apply_setup_to_ui()
+        messagebox.showinfo("Applied",
+                            f"Changed [{cat}] {param} from {current} to {new_val}.\n\n"
+                            f"Reason: {explanation}")
+        # Remove applied recommendation
+        self._current_recommendations = self._current_recommendations[1:]
+
+    # ---- Workflow Guide Tab ----
+    def _build_workflow_tab(self):
+        outer = ttk.Frame(self.notebook)
+        canvas = tk.Canvas(outer, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(outer, orient=tk.VERTICAL, command=canvas.yview)
+        frame = ttk.Frame(canvas, padding=15)
+        frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        for evt in ("<MouseWheel>",):
+            canvas.bind(evt, lambda e: canvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
+        for evt, d in (("<Button-4>", -1), ("<Button-5>", 1)):
+            canvas.bind(evt, lambda e, delta=d: canvas.yview_scroll(delta, "units"))
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        ttk.Label(frame, text="Step-by-Step Setup Workflow",
+                  font=("TkDefaultFont", 14, "bold")).pack(anchor="w", pady=(0, 5))
+        ttk.Label(frame, text=(
+            "Follow these steps in order to build a proper setup from the ground up. "
+            "This is the correct order of operations used by professional race engineers. "
+            "Don't skip steps — each one depends on the previous being reasonably dialed in."
+        ), wraplength=800).pack(anchor="w", pady=(0, 15))
+
+        for step_info in SETUP_WORKFLOW:
+            step_frame = ttk.LabelFrame(
+                frame,
+                text=f"Step {step_info['step']}: {step_info['title']}",
+                padding=10
+            )
+            step_frame.pack(fill=tk.X, pady=5)
+
+            # Description
+            desc = step_info["description"]
+            ttk.Label(step_frame, text=desc, wraplength=800,
+                      font=("TkDefaultFont", 9)).pack(anchor="w", fill=tk.X)
+
+            # What to check
+            check_frame = ttk.Frame(step_frame)
+            check_frame.pack(fill=tk.X, pady=(8, 0))
+            ttk.Label(check_frame, text="What to verify: ",
+                      font=("TkDefaultFont", 9, "bold")).pack(side=tk.LEFT, anchor="n")
+            ttk.Label(check_frame, text=step_info["what_to_check"],
+                      wraplength=700, foreground="dark green",
+                      font=("TkDefaultFont", 9)).pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        return outer
 
     def _build_category_tab(self, cat, params):
         outer = ttk.Frame(self.notebook)
