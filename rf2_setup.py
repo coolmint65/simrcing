@@ -14,6 +14,8 @@ from setup_knowledge import (CAR_CLASSES, TRACK_TYPES, HANDLING_PROBLEMS,
 from rf2_cars import CARS, find_car
 from rf2_tracks import TRACKS, find_track
 from rf2_meta import RF2_META, get_meta_tips
+from rf2_inference import (infer_car, infer_track, remember_car, remember_track,
+                           get_learned_car, get_learned_track)
 
 # ---------------------------------------------------------------------------
 # Setup parameter definitions
@@ -407,30 +409,64 @@ class RF2SetupApp:
         self._selected_car_data = None
         self._selected_car_name = None
         if len(query) >= 2:
-            results = find_car(query)[:8]
-            self._car_search_results = results
-            for name, data in results:
+            # Layer 1: Search built-in database
+            db_results = find_car(query)[:6]
+            # Layer 2: Search learned profiles
+            learned_results = []
+            from rf2_inference import load_learned
+            learned = load_learned()
+            for lname, ldata in learned.get("cars", {}).items():
+                if query.lower() in lname.lower():
+                    learned_results.append((lname, ldata))
+
+            self._car_search_results = []
+            for name, data in db_results:
+                self._car_search_results.append((name, data, "db"))
                 self.car_listbox.insert(tk.END, f"{name}  [{data['class']}]")
-            if results:
-                self.car_desc_var.set(f"Found {len(results)} car(s). Click one to select.")
+            for name, data in learned_results[:4]:
+                self._car_search_results.append((name, data, "learned"))
+                cls = data.get('class', '?')
+                self.car_listbox.insert(tk.END, f"{name}  [{cls}] (remembered)")
+
+            if self._car_search_results:
+                self.car_desc_var.set(f"Found {len(self._car_search_results)} car(s). "
+                                      "Click to select, or just hit Generate to auto-detect.")
             else:
-                self.car_desc_var.set("No cars found. Use the class dropdown as fallback.")
+                # Layer 3: Inference preview
+                result = infer_car(query)
+                if result["confidence"] > 0.2:
+                    inf = result["inferred"]
+                    cls = inf.get("class", "Unknown class")
+                    self.car_desc_var.set(
+                        f"Not in database — detected as: {cls}. "
+                        f"Hit Generate and I'll figure it out (or ask you a few questions).")
+                else:
+                    self.car_desc_var.set(
+                        "Unknown car — hit Generate and I'll ask you a few quick questions "
+                        "to build a profile. I'll remember it for next time.")
         else:
-            self.car_desc_var.set("Type at least 2 characters to search...")
+            self.car_desc_var.set("Type a car name — I know 30+ cars, and can learn any new one...")
 
     def _on_car_selected(self, event=None):
         sel = self.car_listbox.curselection()
         if sel and sel[0] < len(self._car_search_results):
-            name, data = self._car_search_results[sel[0]]
+            name, data, source = self._car_search_results[sel[0]]
             self._selected_car_name = name
             self._selected_car_data = data
             self.car_entry_var.set(name)
-            desc = f"{name} — {data['class']} | {data['engine']}-engine {data['drivetrain']} | "
-            desc += f"{data['power']}HP / {data['weight']}kg | Aero: {data['aero']}"
-            if not data.get('has_abs'):
+            cls = data.get('class', '?')
+            eng = data.get('engine', '?')
+            dt = data.get('drivetrain', '?')
+            pwr = data.get('power', '?')
+            wt = data.get('weight', '?')
+            aero = data.get('aero', '?')
+            desc = f"{name} — {cls} | {eng}-engine {dt} | {pwr}HP / {wt}kg | Aero: {aero}"
+            if not data.get('has_abs', True):
                 desc += " | NO ABS"
-            if not data.get('has_tc'):
+            if not data.get('has_tc', True):
                 desc += " | NO TC"
+            if source == "learned":
+                desc += " | (remembered)"
             self.car_desc_var.set(desc)
 
     def _on_track_search(self, event=None):
@@ -440,62 +476,274 @@ class RF2SetupApp:
         self._selected_track_data = None
         self._selected_track_name = None
         if len(query) >= 2:
-            results = find_track(query)[:8]
-            self._track_search_results = results
-            for name, data in results:
+            db_results = find_track(query)[:6]
+            learned_results = []
+            from rf2_inference import load_learned
+            learned = load_learned()
+            for lname, ldata in learned.get("tracks", {}).items():
+                if query.lower() in lname.lower():
+                    learned_results.append((lname, ldata))
+
+            self._track_search_results = []
+            for name, data in db_results:
+                self._track_search_results.append((name, data, "db"))
                 self.track_listbox.insert(tk.END, f"{name}  [{data['type']}]")
-            if results:
-                self.track_desc_var.set(f"Found {len(results)} track(s). Click one to select.")
+            for name, data in learned_results[:4]:
+                self._track_search_results.append((name, data, "learned"))
+                ttype = data.get('type', '?')
+                self.track_listbox.insert(tk.END, f"{name}  [{ttype}] (remembered)")
+
+            if self._track_search_results:
+                self.track_desc_var.set(f"Found {len(self._track_search_results)} track(s). "
+                                         "Click to select, or just hit Generate.")
             else:
-                self.track_desc_var.set("No tracks found. Use the type dropdown as fallback.")
+                result = infer_track(query)
+                if result["confidence"] > 0.2:
+                    inf = result["inferred"]
+                    ttype = inf.get("type", "Unknown type")
+                    self.track_desc_var.set(
+                        f"Not in database — detected as: {ttype}. "
+                        f"Hit Generate to confirm or I'll ask a quick question.")
+                else:
+                    self.track_desc_var.set(
+                        "Unknown track — hit Generate and I'll ask a quick question. "
+                        "I'll remember it for next time.")
         else:
-            self.track_desc_var.set("Type at least 2 characters to search...")
+            self.track_desc_var.set("Type a track name — I know 25+ tracks, and can learn any new one...")
 
     def _on_track_selected(self, event=None):
         sel = self.track_listbox.curselection()
         if sel and sel[0] < len(self._track_search_results):
-            name, data = self._track_search_results[sel[0]]
+            name, data, source = self._track_search_results[sel[0]]
             self._selected_track_name = name
             self._selected_track_data = data
             self.track_entry_var.set(name)
-            desc = f"{name} — {data['type']} | {data['length_km']}km | "
-            desc += f"Surface: {data['surface']}/5 | Top speed importance: {data['top_speed']}/5"
+            ttype = data.get('type', '?')
+            length = data.get('length_km', '?')
+            surface = data.get('surface', '?')
+            speed = data.get('top_speed', '?')
+            desc = f"{name} — {ttype} | {length}km | Surface: {surface}/5 | Top speed: {speed}/5"
+            if source == "learned":
+                desc += " | (remembered)"
             self.track_desc_var.set(desc)
 
+    # ---- Wizard Dialog ----
+    def _run_wizard(self, title, questions):
+        """Show a simple wizard dialog with multiple-choice questions.
+        Returns dict of {key: selected_value} or None if cancelled."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title(title)
+        dialog.geometry("500x400")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        result = {}
+        vars_map = {}
+
+        frame = ttk.Frame(dialog, padding=15)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(frame, text=title, font=("TkDefaultFont", 12, "bold")).pack(
+            anchor="w", pady=(0, 10))
+        ttk.Label(frame, text="I need a few details to build the right setup. "
+                  "I'll remember your answers for next time.",
+                  wraplength=450, foreground="gray40").pack(anchor="w", pady=(0, 15))
+
+        for key, question, options in questions:
+            q_frame = ttk.LabelFrame(frame, text=question, padding=8)
+            q_frame.pack(fill=tk.X, pady=5)
+            var = tk.StringVar(value=options[0])
+            vars_map[key] = (var, options)
+            for opt in options:
+                ttk.Radiobutton(q_frame, text=opt, variable=var, value=opt).pack(
+                    anchor="w", padx=5)
+
+        cancelled = [False]
+
+        def on_ok():
+            for key, (var, options) in vars_map.items():
+                result[key] = var.get()
+            dialog.destroy()
+
+        def on_cancel():
+            cancelled[0] = True
+            dialog.destroy()
+
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill=tk.X, pady=(15, 0))
+        ttk.Button(btn_frame, text="OK — Generate Setup", command=on_ok).pack(
+            side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text="Cancel", command=on_cancel).pack(side=tk.LEFT)
+
+        dialog.wait_window()
+        return None if cancelled[0] else result
+
+    def _resolve_car(self):
+        """Resolve car input to (name, car_data) through DB -> learned -> infer -> wizard."""
+        # Already selected from list?
+        if self._selected_car_data:
+            return self._selected_car_name, self._selected_car_data
+
+        car_text = self.car_entry_var.get().strip()
+        if not car_text and not self.car_class_var.get():
+            return None, None
+
+        if car_text:
+            # Try DB
+            results = find_car(car_text)
+            if results:
+                return results[0]
+
+            # Try learned
+            learned = get_learned_car(car_text)
+            if learned:
+                return car_text, learned
+
+            # Infer
+            inference = infer_car(car_text)
+            profile = inference["inferred"]
+
+            # Wizard for missing info
+            if inference["questions"]:
+                answers = self._run_wizard(
+                    f"Tell me about: {car_text}", inference["questions"])
+                if answers is None:
+                    return None, None  # Cancelled
+
+                # Parse wizard answers
+                for key, val in answers.items():
+                    if key == "class":
+                        # Extract class name from display string
+                        for cls_name in CAR_CLASSES:
+                            if cls_name.lower() in val.lower() or val.lower().startswith(cls_name.lower()[:10]):
+                                profile["class"] = cls_name
+                                break
+                        else:
+                            profile["class"] = val.split("(")[0].strip()
+                    elif key == "engine":
+                        profile["engine"] = val.lower()
+                    elif key == "has_abs":
+                        profile["has_abs"] = val.lower() == "yes"
+
+            # Fill in remaining defaults from class
+            if "class" not in profile:
+                profile["class"] = "GT3"
+            if "engine" not in profile:
+                profile["engine"] = "mid"
+            if "drivetrain" not in profile:
+                profile["drivetrain"] = "RWD"
+            if "aero" not in profile:
+                profile["aero"] = "medium"
+            if "weight" not in profile:
+                profile["weight"] = 1200
+            if "power" not in profile:
+                profile["power"] = 450
+            profile.setdefault("has_abs", True)
+            profile.setdefault("has_tc", True)
+            profile.setdefault("bias", {})
+            profile.setdefault("notes", f"User-defined: {car_text}")
+
+            # Remember for next time
+            remember_car(car_text, profile)
+            return car_text, profile
+
+        # Fallback: class dropdown only
+        if self.car_class_var.get():
+            cls_name = self.car_class_var.get()
+            profile = {
+                "class": cls_name, "engine": "mid", "drivetrain": "RWD",
+                "aero": "medium", "weight": 1200, "power": 450,
+                "has_abs": True, "has_tc": True, "bias": {},
+                "notes": f"Generic {cls_name}",
+            }
+            return cls_name, profile
+
+        return None, None
+
+    def _resolve_track(self):
+        """Resolve track input to (name, track_data) through DB -> learned -> infer -> wizard."""
+        if self._selected_track_data:
+            return self._selected_track_name, self._selected_track_data
+
+        track_text = self.track_entry_var.get().strip()
+        if not track_text and not self.track_type_var.get():
+            return None, None
+
+        if track_text:
+            # Try DB
+            results = find_track(track_text)
+            if results:
+                return results[0]
+
+            # Try learned
+            learned = get_learned_track(track_text)
+            if learned:
+                return track_text, learned
+
+            # Infer
+            inference = infer_track(track_text)
+            profile = inference["inferred"]
+
+            if inference["questions"]:
+                answers = self._run_wizard(
+                    f"Tell me about: {track_text}", inference["questions"])
+                if answers is None:
+                    return None, None
+
+                for key, val in answers.items():
+                    if key == "type":
+                        for tt_name in TRACK_TYPES:
+                            if tt_name.lower() in val.lower() or val.lower().startswith(tt_name.lower()[:10]):
+                                profile["type"] = tt_name
+                                break
+                        else:
+                            profile["type"] = val.split("(")[0].strip()
+
+            if "type" not in profile:
+                profile["type"] = "Technical / Tight Circuit"
+            profile.setdefault("surface", 3)
+            profile.setdefault("top_speed", 3)
+            profile.setdefault("slow_corners", 4)
+            profile.setdefault("elevation", "medium")
+            profile.setdefault("length_km", 5.0)
+            profile.setdefault("bias", {})
+            profile.setdefault("notes", f"User-defined: {track_text}")
+
+            remember_track(track_text, profile)
+            return track_text, profile
+
+        # Fallback: type dropdown only
+        if self.track_type_var.get():
+            tt_name = self.track_type_var.get()
+            profile = {
+                "type": tt_name, "surface": 3, "top_speed": 3,
+                "slow_corners": 4, "elevation": "medium", "length_km": 5.0,
+                "bias": {}, "notes": f"Generic {tt_name}",
+            }
+            return tt_name, profile
+
+        return None, None
+
     def _generate_baseline(self):
-        # Determine car source: specific car DB entry, or class fallback
-        car_data = self._selected_car_data
-        car_name = self._selected_car_name
-        track_data = self._selected_track_data
-        track_name = self._selected_track_name
         apply_meta = self.apply_meta_var.get()
 
-        if car_data:
-            # Smart generation: specific car + optional specific track
-            setup, tips, warnings, meta_changes = generate_smart_baseline(
-                car_data, track_data, apply_meta)
-            label = car_name
-            if track_name:
-                label += f" @ {track_name}"
-        elif self.car_class_var.get():
-            # Fallback: class + optional track type
-            car_class = self.car_class_var.get()
-            track_type = self.track_type_var.get() or None
-            setup, tips, warnings = generate_baseline(car_class, track_type)
-            meta_changes = []
-            if setup is None:
-                messagebox.showerror("Error", "\n".join(warnings))
-                return
-            if apply_meta:
-                from rf2_meta import apply_meta_to_setup
-                meta_changes = apply_meta_to_setup(setup)
-            label = car_class
-            if track_type:
-                label += f" @ {track_type}"
-        else:
-            messagebox.showwarning("Select a Car",
-                                   "Search for a car by name, or select a car class from the dropdown.")
+        # Resolve car (DB -> learned -> infer -> wizard)
+        car_name, car_data = self._resolve_car()
+        if not car_data:
+            messagebox.showwarning("Need a Car",
+                                   "Type a car name or select a car class to generate a setup.")
             return
+
+        # Resolve track (optional)
+        track_name, track_data = self._resolve_track()
+
+        # Generate!
+        setup, tips, warnings, meta_changes = generate_smart_baseline(
+            car_data, track_data, apply_meta)
+
+        label = car_name or "Unknown"
+        if track_name:
+            label += f" @ {track_name}"
 
         self.setup = setup
         self._apply_setup_to_ui()
@@ -507,11 +755,28 @@ class RF2SetupApp:
         t.delete("1.0", tk.END)
         t.insert(tk.END, f"Baseline Generated: {label}\n\n", "heading")
 
+        # Source info
+        if car_name in CARS:
+            t.insert(tk.END, f"Car source: Built-in database\n", "tip")
+        elif get_learned_car(car_name or ""):
+            t.insert(tk.END, f"Car source: Remembered from previous session\n", "tip")
+        else:
+            t.insert(tk.END, f"Car source: Inferred from name / wizard answers\n", "tip")
+
+        if track_data:
+            if track_name in TRACKS:
+                t.insert(tk.END, f"Track source: Built-in database\n\n", "tip")
+            elif get_learned_track(track_name or ""):
+                t.insert(tk.END, f"Track source: Remembered from previous session\n\n", "tip")
+            else:
+                t.insert(tk.END, f"Track source: Inferred from name / wizard answers\n\n", "tip")
+        else:
+            t.insert(tk.END, "\n")
+
         if warnings:
             t.insert(tk.END, "CAR & TRACK NOTES:\n", "heading")
             for w in warnings:
                 t.insert(tk.END, f"  * {w}\n\n", "warning")
-            t.insert(tk.END, "\n")
 
         if meta_changes:
             t.insert(tk.END, "rF2 META APPLIED:\n", "heading")
