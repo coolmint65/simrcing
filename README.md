@@ -48,9 +48,39 @@ python3 rf2_setup.py
 2. **Save the baseline** (File > Save Setup) — you'll compare against this later
 3. **Workflow Guide tab** — Follow the steps in order to refine the setup
 4. **Run laps** — test on track
-5. **Problem Solver tab** — describe what's wrong, apply fixes one at a time
+5. **Problem Solver tab** — describe what's wrong, apply fixes one at a time (now car/track-aware — skips irrelevant fixes for no-aero/no-ABS cars)
 6. **Compare** — load your baseline to see what you changed
-7. **Save your final setup**
+7. **Calculators tab** — fuel for your stint, final drive for your target top speed
+8. **Journal tab** — everything you changed across all sessions, with reasons
+9. **Export to rF2 .svm** (File menu) — drop the file into your rF2 setups folder
+
+### File I/O
+
+- `File > Open / Save Setup (.json)` — the app's native format
+- `File > Import rF2 .svm` — load an in-game setup file
+- `File > Export rF2 .svm` — write a setup file you can use in rF2
+
+Parameters without a confident .svm mapping are reported on import/export.
+
+### Project Layout
+
+```
+rf2_setup.py             # entry point (launches the UI)
+rf2/                     # domain logic
+  parameters.py          # the 48 setup parameters (bounds, defaults, tips)
+  cars.py / tracks.py    # JSON-backed database loaders
+  inference.py           # keyword-based car/track inference
+  meta.py                # rF2 simulation meta rules
+  svm.py                 # .svm read/write
+  telemetry.py           # rF2 shared-memory telemetry (requires SMMP plugin)
+  calculators.py         # fuel + gearing math
+  units.py               # metric <-> imperial conversion
+  history.py             # setup change journal
+  knowledge/             # car classes, track types, problems, workflow, baseline
+ui/                      # tkinter UI mixins (one per tab)
+data/                    # cars.json, tracks.json (PR-friendly database)
+tests/                   # unittest — run with: python -m unittest discover -s tests
+```
 
 ### Car Classes
 
