@@ -1,0 +1,185 @@
+"""Main application — composes all tab mixins into RF2SetupApp."""
+
+import json
+import os
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+
+from rf2.parameters import SETUP_CATEGORIES, get_default_setup
+
+from ui.advisor_tab import AdvisorMixin
+from ui.problem_tab import ProblemMixin
+from ui.workflow_tab import WorkflowMixin
+from ui.editor_tab import EditorMixin
+
+
+class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin):
+    def __init__(self, root):
+        self.root = root
+        self.root.title("rFactor 2 Car Setup Program")
+        self.root.geometry("960x720")
+        self.root.minsize(800, 600)
+
+        self.setup = get_default_setup()
+        self.compare_setup = None
+        self.compare_name = ""
+        self.widgets = {}
+
+        self._selected_car_data = None
+        self._selected_car_name = None
+        self._selected_track_data = None
+        self._selected_track_name = None
+
+        self._build_menu()
+        self._build_ui()
+
+    # ---- Menu ---------------------------------------------------------------
+
+    def _build_menu(self):
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+
+        file_menu = tk.Menu(menubar, tearoff=0)
+        file_menu.add_command(label="New Setup", command=self.new_setup)
+        file_menu.add_command(label="Open Setup...", command=self.load_setup)
+        file_menu.add_command(label="Save Setup...", command=self.save_setup)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        menubar.add_cascade(label="File", menu=file_menu)
+
+        compare_menu = tk.Menu(menubar, tearoff=0)
+        compare_menu.add_command(label="Load Setup to Compare...", command=self.load_compare)
+        compare_menu.add_command(label="Clear Comparison", command=self.clear_compare)
+        menubar.add_cascade(label="Compare", menu=compare_menu)
+
+    # ---- UI layout ----------------------------------------------------------
+
+    def _build_ui(self):
+        info_frame = ttk.Frame(self.root, padding=5)
+        info_frame.pack(fill=tk.X)
+        self.status_var = tk.StringVar(value="rFactor 2 Setup Editor — New Setup")
+        ttk.Label(info_frame, textvariable=self.status_var,
+                  font=("TkDefaultFont", 11, "bold")).pack(side=tk.LEFT)
+
+        self.compare_var = tk.StringVar(value="")
+        ttk.Label(info_frame, textvariable=self.compare_var,
+                  foreground="blue").pack(side=tk.RIGHT)
+
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        self.notebook.add(self._build_advisor_tab(), text=">> Advisor")
+        self.notebook.add(self._build_problem_solver_tab(), text=">> Problem Solver")
+        self.notebook.add(self._build_workflow_tab(), text=">> Workflow Guide")
+
+        sep = ttk.Frame(self.notebook)
+        self.notebook.add(sep, text="---", state="disabled")
+
+        for cat, params in SETUP_CATEGORIES.items():
+            self.notebook.add(self._build_category_tab(cat, params), text=cat)
+
+    # ---- File operations ----------------------------------------------------
+
+    def new_setup(self):
+        self.setup = get_default_setup()
+        self._apply_setup_to_ui()
+        self.status_var.set("rFactor 2 Setup Editor — New Setup")
+
+    def save_setup(self):
+        path = filedialog.asksaveasfilename(
+            title="Save Setup",
+            defaultextension=".json",
+            filetypes=[("JSON Setup Files", "*.json"), ("All Files", "*.*")],
+            initialdir=self._setups_dir())
+        if not path:
+            return
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.setup, f, indent=2)
+        basename = os.path.basename(path)
+        self.status_var.set(f"rFactor 2 Setup Editor — {basename}")
+        messagebox.showinfo("Saved", f"Setup saved to:\n{path}")
+
+    def load_setup(self):
+        path = filedialog.askopenfilename(
+            title="Open Setup",
+            filetypes=[("JSON Setup Files", "*.json"), ("All Files", "*.*")],
+            initialdir=self._setups_dir())
+        if not path:
+            return
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            messagebox.showerror("Error", f"Failed to load setup:\n{e}")
+            return
+        self._merge_into_setup(data)
+        self._apply_setup_to_ui()
+        basename = os.path.basename(path)
+        self.status_var.set(f"rFactor 2 Setup Editor — {basename}")
+
+    # ---- Compare ------------------------------------------------------------
+
+    def load_compare(self):
+        path = filedialog.askopenfilename(
+            title="Load Setup to Compare",
+            filetypes=[("JSON Setup Files", "*.json"), ("All Files", "*.*")],
+            initialdir=self._setups_dir())
+        if not path:
+            return
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            messagebox.showerror("Error", f"Failed to load compare setup:\n{e}")
+            return
+        merged = get_default_setup()
+        for cat in merged:
+            if cat in data:
+                for name in merged[cat]:
+                    if name in data[cat]:
+                        merged[cat][name] = data[cat][name]
+        self.compare_setup = merged
+        self.compare_name = os.path.basename(path)
+        self.compare_var.set(f"Comparing with: {self.compare_name}")
+        self._update_all_compare_labels()
+
+    def clear_compare(self):
+        self.compare_setup = None
+        self.compare_name = ""
+        self.compare_var.set("")
+        self._update_all_compare_labels()
+
+    # ---- Internal helpers ---------------------------------------------------
+
+    def _setups_dir(self):
+        return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "setups")
+
+    def _merge_into_setup(self, partial):
+        """Merge a partial dict into self.setup, keeping defaults for missing keys."""
+        if not self.setup:
+            self.setup = get_default_setup()
+        for cat, params in partial.items():
+            if cat not in self.setup:
+                continue
+            for name, val in params.items():
+                if name in self.setup[cat]:
+                    self.setup[cat][name] = val
+
+
+def main():
+    root = tk.Tk()
+
+    style = ttk.Style()
+    available_themes = style.theme_names()
+    for preferred in ("clam", "alt", "default"):
+        if preferred in available_themes:
+            style.theme_use(preferred)
+            break
+
+    app = RF2SetupApp(root)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

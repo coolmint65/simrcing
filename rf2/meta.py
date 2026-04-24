@@ -152,7 +152,7 @@ def get_meta_tips():
 def apply_meta_to_setup(setup, car_data=None):
     """Apply rF2 meta knowledge to a setup dict. Modifies in place and returns
     a list of (description, explanation) for what was changed."""
-    from rf2_setup import SETUP_CATEGORIES
+    from rf2.parameters import SETUP_CATEGORIES
 
     changes = []
 

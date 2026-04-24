@@ -396,7 +396,8 @@ def infer_track(name):
 # User profile persistence — remember learned cars and tracks
 # ---------------------------------------------------------------------------
 
-PROFILE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "user_profiles")
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROFILE_DIR = os.path.join(_PROJECT_ROOT, "user_profiles")
 PROFILE_FILE = os.path.join(PROFILE_DIR, "learned.json")
 
 
