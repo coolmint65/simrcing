@@ -7,6 +7,7 @@ from tkinter import ttk, messagebox, filedialog
 
 from rf2.parameters import SETUP_CATEGORIES, get_default_setup
 from rf2 import svm as svm_io
+from rf2 import telemetry
 
 from ui.advisor_tab import AdvisorMixin
 from ui.problem_tab import ProblemMixin
@@ -88,6 +89,29 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
                                    variable=self.unit_system, value="imperial",
                                    command=self._on_unit_system_change)
         menubar.add_cascade(label="Units", menu=view_menu)
+
+        tools_menu = tk.Menu(menubar, tearoff=0)
+        tools_menu.add_command(label="Check rF2 Telemetry Connection",
+                                command=self._check_telemetry)
+        menubar.add_cascade(label="Tools", menu=tools_menu)
+
+    # ---- Telemetry ----------------------------------------------------------
+
+    def _check_telemetry(self):
+        try:
+            with telemetry.connect() as t:
+                temps = t.tire_temps()
+        except telemetry.TelemetryUnavailable as e:
+            messagebox.showwarning("Telemetry", str(e))
+            return
+        if temps is None:
+            messagebox.showinfo("Telemetry",
+                                 "Connected, but could not parse the buffer. "
+                                 "The plugin version might not match what this app expects. "
+                                 "Tire temp readings will be unavailable.")
+            return
+        msg = "Live tire temps:\n" + "\n".join(f"  {k}: {v:.1f} °C" for k, v in temps.items())
+        messagebox.showinfo("Telemetry", msg)
 
     # ---- Unit toggle --------------------------------------------------------
 
