@@ -427,11 +427,26 @@ class AdvisorMixin:
             for tip in tips:
                 t.insert(tk.END, f"  * {tip}\n\n", "tip")
 
+        library_matches = self.library_matches_for(car_name, track_name)
+        if library_matches:
+            t.insert(tk.END, "LIBRARY MATCHES:\n", "heading")
+            t.insert(tk.END,
+                      f"  Found {len(library_matches)} indexed setup(s) for this combo. "
+                      "Open the Library tab to load one instead of using this baseline.\n",
+                      "tip")
+            for entry in library_matches[:5]:
+                t.insert(tk.END,
+                          f"    - {entry.name}  "
+                          f"({entry.raw_car_folder or entry.car} @ "
+                          f"{entry.raw_track_folder or entry.track})\n")
+            t.insert(tk.END, "\n")
+
         t.insert(tk.END, "\nNEXT STEPS:\n", "heading")
         t.insert(tk.END, (
             "  1. Save this baseline (File > Save Setup) before making changes.\n"
             "  2. Go to the Workflow Guide tab for step-by-step tuning instructions.\n"
             "  3. Run 5-10 laps, then use the Problem Solver tab to fix handling issues.\n"
             "  4. Use Compare to see your changes vs the baseline.\n"
+            "  5. If you already have setups for this combo, check the Library tab.\n"
         ))
         t.config(state=tk.DISABLED)
