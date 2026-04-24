@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
 from rf2.parameters import SETUP_CATEGORIES, get_default_setup
+from rf2 import svm as svm_io
 
 from ui.advisor_tab import AdvisorMixin
 from ui.problem_tab import ProblemMixin
@@ -67,6 +68,9 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
         file_menu.add_command(label="New Setup", command=self.new_setup)
         file_menu.add_command(label="Open Setup...", command=self.load_setup)
         file_menu.add_command(label="Save Setup...", command=self.save_setup)
+        file_menu.add_separator()
+        file_menu.add_command(label="Import rF2 .svm...", command=self.import_svm)
+        file_menu.add_command(label="Export rF2 .svm...", command=self.export_svm)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
         menubar.add_cascade(label="File", menu=file_menu)
@@ -163,6 +167,49 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
         basename = os.path.basename(path)
         self.status_var.set(f"rFactor 2 Setup Editor — {basename}")
         self.journal_log_event("load", path=path)
+
+    def import_svm(self):
+        path = filedialog.askopenfilename(
+            title="Import rF2 .svm",
+            filetypes=[("rF2 Setup Files", "*.svm"), ("All Files", "*.*")])
+        if not path:
+            return
+        try:
+            partial, unmapped = svm_io.read_svm(path)
+        except OSError as e:
+            messagebox.showerror("Error", f"Failed to read .svm:\n{e}")
+            return
+        self._merge_into_setup(partial)
+        self._apply_setup_to_ui()
+        self.status_var.set(f"rFactor 2 Setup Editor — {os.path.basename(path)}")
+        self.journal_log_event("import_svm", path=path)
+        note = ""
+        if unmapped:
+            note = (f"\n\n{len(unmapped)} key(s) in the .svm were not recognized and "
+                    "kept at defaults. Unmapped sample: "
+                    + ", ".join(f"{s}/{k}" for s, k in unmapped[:5])
+                    + ("..." if len(unmapped) > 5 else ""))
+        messagebox.showinfo("Imported .svm",
+                             f"Loaded {sum(len(v) for v in partial.values())} "
+                             f"parameters from {os.path.basename(path)}.{note}")
+
+    def export_svm(self):
+        path = filedialog.asksaveasfilename(
+            title="Export to rF2 .svm",
+            defaultextension=".svm",
+            filetypes=[("rF2 Setup Files", "*.svm"), ("All Files", "*.*")])
+        if not path:
+            return
+        try:
+            omitted = svm_io.write_svm(path, self.setup)
+        except OSError as e:
+            messagebox.showerror("Error", f"Failed to write .svm:\n{e}")
+            return
+        self.journal_log_event("export_svm", path=path)
+        msg = f"Exported {os.path.basename(path)}."
+        if omitted:
+            msg += f"\n\n{len(omitted)} parameter(s) had no .svm mapping and were omitted."
+        messagebox.showinfo("Exported .svm", msg)
 
     # ---- Compare ------------------------------------------------------------
 
