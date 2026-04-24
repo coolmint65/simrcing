@@ -11,9 +11,11 @@ from ui.advisor_tab import AdvisorMixin
 from ui.problem_tab import ProblemMixin
 from ui.workflow_tab import WorkflowMixin
 from ui.editor_tab import EditorMixin
+from ui.journal_tab import JournalMixin
 
 
-class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin):
+class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
+                  JournalMixin):
     def __init__(self, root):
         self.root = root
         self.root.title("rFactor 2 Car Setup Program")
@@ -71,6 +73,7 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin):
         self.notebook.add(self._build_advisor_tab(), text=">> Advisor")
         self.notebook.add(self._build_problem_solver_tab(), text=">> Problem Solver")
         self.notebook.add(self._build_workflow_tab(), text=">> Workflow Guide")
+        self.notebook.add(self._build_journal_tab(), text=">> Journal")
 
         sep = ttk.Frame(self.notebook)
         self.notebook.add(sep, text="---", state="disabled")
@@ -97,6 +100,7 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin):
             json.dump(self.setup, f, indent=2)
         basename = os.path.basename(path)
         self.status_var.set(f"rFactor 2 Setup Editor — {basename}")
+        self.journal_log_event("save", path=path)
         messagebox.showinfo("Saved", f"Setup saved to:\n{path}")
 
     def load_setup(self):
@@ -116,6 +120,7 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin):
         self._apply_setup_to_ui()
         basename = os.path.basename(path)
         self.status_var.set(f"rFactor 2 Setup Editor — {basename}")
+        self.journal_log_event("load", path=path)
 
     # ---- Compare ------------------------------------------------------------
 

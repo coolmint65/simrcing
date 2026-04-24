@@ -386,6 +386,7 @@ class AdvisorMixin:
         self.setup = setup
         self._apply_setup_to_ui()
         self.status_var.set(f"rFactor 2 Setup Editor — {label}")
+        self.journal_log_baseline(car_name, track_name)
 
         t = self.advisor_results
         t.config(state=tk.NORMAL)

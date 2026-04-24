@@ -116,6 +116,8 @@ class ProblemMixin:
         else:
             new_val = int(round(new_val))
 
+        self.journal_log(cat, param, current, new_val,
+                         reason=f"Problem Solver: {explanation}")
         self.setup[cat][param] = new_val
         self._apply_setup_to_ui()
         messagebox.showinfo("Applied",
