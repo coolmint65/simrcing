@@ -40,6 +40,8 @@ _MAP = [
     ("REARWING", "RearDiffuserSetting", "Aero", "Rear Diffuser"),
     ("FRONTWING", "FrontBrakeDuctSetting", "Aero", "Brake Ducts Front"),
     ("REARWING", "RearBrakeDuctSetting", "Aero", "Brake Ducts Rear"),
+    ("ENGINE", "RadiatorSetting", "Aero", "Radiator Opening"),
+    ("BODY", "RadiatorSetting", "Aero", "Radiator Opening"),
 
     ("LEFTFRONT", "PressureSetting", "Tires", "Front Tire Pressure"),
     ("RIGHTFRONT", "PressureSetting", "Tires", "Front Tire Pressure"),
@@ -53,6 +55,28 @@ _MAP = [
     ("RIGHTFRONT", "CamberSetting", "Suspension", "Front Camber"),
     ("LEFTREAR", "CamberSetting", "Suspension", "Rear Camber"),
     ("RIGHTREAR", "CamberSetting", "Suspension", "Rear Camber"),
+
+    ("LEFTFRONT", "CasterSetting", "Suspension", "Front Caster"),
+    ("RIGHTFRONT", "CasterSetting", "Suspension", "Front Caster"),
+
+    ("LEFTFRONT", "PackerSetting", "Suspension", "Front Spring Packers"),
+    ("RIGHTFRONT", "PackerSetting", "Suspension", "Front Spring Packers"),
+    ("LEFTREAR", "PackerSetting", "Suspension", "Rear Spring Packers"),
+    ("RIGHTREAR", "PackerSetting", "Suspension", "Rear Spring Packers"),
+
+    ("LEFTFRONT", "BumpStopSetting", "Suspension", "Front Bump Stop Range"),
+    ("RIGHTFRONT", "BumpStopSetting", "Suspension", "Front Bump Stop Range"),
+    ("LEFTREAR", "BumpStopSetting", "Suspension", "Rear Bump Stop Range"),
+    ("RIGHTREAR", "BumpStopSetting", "Suspension", "Rear Bump Stop Range"),
+
+    ("FRONT", "ThirdSpringSetting", "Suspension", "Front Third Spring"),
+    ("FRONT", "HeaveSpringSetting", "Suspension", "Front Third Spring"),
+    ("REAR", "ThirdSpringSetting", "Suspension", "Rear Third Spring"),
+    ("REAR", "HeaveSpringSetting", "Suspension", "Rear Third Spring"),
+
+    ("CONTROL", "SteerLockSetting", "Suspension", "Steering Lock"),
+    ("CONTROL", "SteerRatioSetting", "Suspension", "Steering Ratio"),
+    ("CONTROL", "WeightDistSetting", "Suspension", "Weight Distribution"),
 
     ("LEFTFRONT", "ToeInSetting", "Suspension", "Front Toe"),
     ("RIGHTFRONT", "ToeInSetting", "Suspension", "Front Toe"),
@@ -97,18 +121,21 @@ _MAP = [
     ("DIFFERENTIAL", "ViscousSetting", "Differential", "Viscous Lock"),
 
     ("DRIVELINE", "FinalDriveSetting", "Gearing", "Final Drive"),
-    ("DRIVELINE", "ReverseSetting", "Gearing", "1st Gear"),
     ("DRIVELINE", "Gear1Setting", "Gearing", "1st Gear"),
     ("DRIVELINE", "Gear2Setting", "Gearing", "2nd Gear"),
     ("DRIVELINE", "Gear3Setting", "Gearing", "3rd Gear"),
     ("DRIVELINE", "Gear4Setting", "Gearing", "4th Gear"),
     ("DRIVELINE", "Gear5Setting", "Gearing", "5th Gear"),
     ("DRIVELINE", "Gear6Setting", "Gearing", "6th Gear"),
+    ("DRIVELINE", "Gear7Setting", "Gearing", "7th Gear"),
 
     ("ENGINE", "EngineBrakingSetting", "Engine", "Engine Braking"),
     ("ENGINE", "ThrottleMapSetting", "Engine", "Throttle Map"),
     ("ENGINE", "RevLimitSetting", "Engine", "Rev Limit"),
     ("ENGINE", "FuelSetting", "Engine", "Fuel Load"),
+    ("ENGINE", "BoostSetting", "Engine", "Turbo Boost"),
+    ("ENGINE", "TurboSetting", "Engine", "Turbo Boost"),
+    ("ENGINE", "MixtureSetting", "Engine", "Engine Mixture"),
 ]
 
 

@@ -39,6 +39,36 @@ SETUP_CATEGORIES = {
         "Rear Camber": (-5.0, 0.0, 0.1, -2.0, "deg",
             "Less negative camber than front is typical. Too much negative camber reduces "
             "rear traction under acceleration."),
+        "Front Caster": (0.0, 12.0, 0.5, 6.0, "deg",
+            "More caster increases self-centering and straight-line stability, and adds "
+            "dynamic camber in corners. Too much makes steering heavy."),
+        "Front Spring Packers": (0, 15, 1, 3, "mm",
+            "Rubber packers shorten maximum compression travel — stops the chassis from "
+            "bottoming at high speed/downforce. More packer = earlier hard stop."),
+        "Rear Spring Packers": (0, 15, 1, 3, "mm",
+            "Same role as front packers. Tune alongside ride height and springs as an "
+            "aero-platform triangle."),
+        "Front Bump Stop Range": (0, 25, 1, 12, "mm",
+            "Distance before the bump stop engages. Shorter range = more chassis control, "
+            "but harsher ride over bumps. Longer = compliant until near bottom."),
+        "Rear Bump Stop Range": (0, 25, 1, 12, "mm",
+            "Rear bump stop distance. On aero cars, this often sets the floor-to-ground "
+            "minimum at high speed."),
+        "Front Third Spring": (0, 300, 5, 0, "N/mm",
+            "Heave spring — resists both wheels compressing together (pure heave). Used on "
+            "aero-dependent cars to keep ride height stable. Set to 0 to disable."),
+        "Rear Third Spring": (0, 300, 5, 0, "N/mm",
+            "Rear heave spring. Common on prototypes/open-wheelers with ground effect. "
+            "Softer = more compliance over crests; stiffer = more aero stability."),
+        "Steering Lock": (10, 40, 1, 20, "deg",
+            "Maximum wheel deflection. Smaller lock = less arm motion for fast corners; "
+            "larger lock needed for hairpins and autocross. Track-dependent."),
+        "Steering Ratio": (8.0, 20.0, 0.5, 12.0, "ratio",
+            "Steering wheel degrees per wheel degree. Higher = slower, smoother response; "
+            "lower = sharper, twitchier. Historic cars usually need a higher ratio."),
+        "Weight Distribution": (40.0, 60.0, 0.5, 50.0, "% front",
+            "Fore/aft mass distribution. Most cars have a fixed or narrow adjustment range. "
+            "More front weight = more front grip under braking, more wear on front tires."),
     },
     "Dampers": {
         "Front Slow Bump": (1, 20, 1, 8, "clicks",
@@ -85,6 +115,10 @@ SETUP_CATEGORIES = {
         "Brake Ducts Rear": (0, 100, 5, 50, "%",
             "Same trade-off as front ducts. Rear brakes typically run cooler "
             "so can often be more closed than fronts."),
+        "Radiator Opening": (0, 100, 5, 50, "%",
+            "Radiator/oil-cooler intake opening. Larger opening = better cooling and less "
+            "risk of overheat, but adds drag. Close it as much as you can for sprint races; "
+            "err open for endurance."),
     },
     "Tires": {
         "Front Tire Pressure": (100, 200, 5, 145, "kPa",
@@ -148,8 +182,9 @@ SETUP_CATEGORIES = {
             "High-speed gear. Ensure you're in the power band on the main straights. "
             "Adjust spacing with 4th and 6th."),
         "6th Gear": (0.6, 1.5, 0.01, 1.08, "ratio",
-            "Top gear. Set so the car just reaches or slightly exceeds the rev limiter "
-            "at the end of the longest straight."),
+            "Top gear for most cars. On 7-speed gearboxes, this is penultimate."),
+        "7th Gear": (0.0, 1.3, 0.01, 0.0, "ratio",
+            "Top gear on 7-speed gearboxes. Set to 0 for cars with 6 gears or fewer."),
     },
     "Engine": {
         "Engine Braking": (0, 100, 5, 50, "%",
@@ -164,6 +199,12 @@ SETUP_CATEGORIES = {
         "Fuel Load": (10, 120, 1, 60, "liters",
             "More fuel adds weight, reducing grip and increasing tire wear. "
             "Calculate fuel needed for your stint and add a small buffer."),
+        "Turbo Boost": (0, 10, 1, 5, "level",
+            "Turbo boost level (turbocharged cars only). Higher = more power, more fuel/heat, "
+            "more wear. Practice-optimize this; race-strategize it. Set to 0 if naturally aspirated."),
+        "Engine Mixture": (0, 10, 1, 5, "level",
+            "Fuel/air mixture richness. Richer = more power, more fuel burn. Leaner = fuel "
+            "saving on long stints. Cars without driver-adjustable mixture should keep at 5."),
     },
 }
 
