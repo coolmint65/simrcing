@@ -42,6 +42,8 @@ class ProblemMixin:
                                             font=("TkDefaultFont", 9, "bold"))
         self.problem_results.tag_configure("explain", foreground="gray30")
         self.problem_results.tag_configure("current", foreground="gray50")
+        self.problem_results.tag_configure("skip", foreground="gray50",
+                                            font=("TkDefaultFont", 9, "italic"))
 
         self._current_recommendations = []
         return outer
@@ -64,10 +66,12 @@ class ProblemMixin:
         t.insert(tk.END, "Likely causes: ", "heading")
         t.insert(tk.END, f"{problem['causes']}\n\n", "cause")
 
+        recommendations = self._filter_recommendations_for_car(problem["recommendations"])
+        self._current_recommendations = recommendations
+
         t.insert(tk.END, "RECOMMENDED CHANGES (in priority order):\n\n", "heading")
 
-        self._current_recommendations = problem["recommendations"]
-        for i, (cat, param, delta, explanation) in enumerate(problem["recommendations"], 1):
+        for i, (cat, param, delta, explanation) in enumerate(recommendations, 1):
             current = self.setup.get(cat, {}).get(param, "?")
             info = SETUP_CATEGORIES.get(cat, {}).get(param)
             if info:
@@ -88,6 +92,13 @@ class ProblemMixin:
             else:
                 t.insert(tk.END, f"  {i}. [{cat}] {param}: change by {delta}\n", "fix")
             t.insert(tk.END, f"     {explanation}\n\n", "explain")
+
+        skipped = self._skipped_recommendations(problem["recommendations"])
+        if skipped:
+            t.insert(tk.END, "\nSKIPPED (not applicable to this car):\n", "heading")
+            for reason, items in skipped.items():
+                for cat, param, _delta, _exp in items:
+                    t.insert(tk.END, f"  - [{cat}] {param}: {reason}\n", "skip")
 
         t.insert(tk.END, "\nTIP: ", "heading")
         t.insert(tk.END, (
@@ -124,3 +135,44 @@ class ProblemMixin:
                             f"Changed [{cat}] {param} from {current} to {new_val}.\n\n"
                             f"Reason: {explanation}")
         self._current_recommendations = self._current_recommendations[1:]
+
+    # ---- Car/track context helpers -----------------------------------------
+
+    def _filter_recommendations_for_car(self, recommendations):
+        """Drop recommendations that don't make sense for the currently loaded car.
+
+        Examples: no-ABS cars shouldn't get brake-pressure-reduce suggestions that
+        assume ABS-based threshold braking; no-aero cars shouldn't get wing tweaks.
+        """
+        car = self.loaded_car()
+        track = self.loaded_track()
+        out = []
+        for rec in recommendations:
+            if self._recommendation_skip_reason(rec, car, track) is None:
+                out.append(rec)
+        return out
+
+    def _skipped_recommendations(self, recommendations):
+        """Group dropped recommendations by reason for display."""
+        car = self.loaded_car()
+        track = self.loaded_track()
+        skipped = {}
+        for rec in recommendations:
+            reason = self._recommendation_skip_reason(rec, car, track)
+            if reason is not None:
+                skipped.setdefault(reason, []).append(rec)
+        return skipped
+
+    @staticmethod
+    def _recommendation_skip_reason(rec, car, track):
+        """Return a reason string if this rec should be skipped, else None."""
+        cat, param, _delta, _exp = rec
+        if car is None:
+            return None
+
+        aero_level = (car.get("aero") or "").lower()
+        if aero_level in ("none", ""):
+            if cat == "Aero" and param in ("Front Wing Angle", "Rear Wing Angle",
+                                            "Front Splitter", "Rear Diffuser"):
+                return "no aero on this car"
+        return None

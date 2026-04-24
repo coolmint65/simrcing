@@ -95,6 +95,49 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
                                 command=self._check_telemetry)
         menubar.add_cascade(label="Tools", menu=tools_menu)
 
+    # ---- Per-car parameter overrides ----------------------------------------
+
+    def apply_param_overrides_from_car(self):
+        """When a car is loaded, dim/lock out parameters that don't apply.
+
+        For cars without aero, disable wing/splitter/diffuser sliders.
+        For cars without ABS, mark the status bar so the user remembers.
+        """
+        car = self._selected_car_data
+        if not car:
+            return
+        aero_level = (car.get("aero") or "").lower()
+        has_abs = car.get("has_abs", True)
+
+        disable_params = set()
+        if aero_level == "none":
+            for p in ("Front Wing Angle", "Rear Wing Angle",
+                      "Front Splitter", "Rear Diffuser"):
+                disable_params.add(("Aero", p))
+
+        for (cat, param), widgets in self._flat_widgets().items():
+            _var, scale, value_label, _compare_label, _step, _is_float, _vmin, _vmax = widgets
+            state = "disabled" if (cat, param) in disable_params else "normal"
+            try:
+                scale.config(state=state)
+            except tk.TclError:
+                pass
+            color = "gray60" if state == "disabled" else "black"
+            try:
+                value_label.config(foreground=color)
+            except tk.TclError:
+                pass
+
+        if not has_abs:
+            self.status_var.set(self.status_var.get() + "  [NO ABS — threshold brake]")
+
+    def _flat_widgets(self):
+        out = {}
+        for cat, params in self.widgets.items():
+            for name, widget_tuple in params.items():
+                out[(cat, name)] = widget_tuple
+        return out
+
     # ---- Telemetry ----------------------------------------------------------
 
     def _check_telemetry(self):

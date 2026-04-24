@@ -384,6 +384,7 @@ class AdvisorMixin:
             label += f" @ {track_name}"
 
         self.setup = setup
+        self.apply_param_overrides_from_car()
         self._apply_setup_to_ui()
         self.status_var.set(f"rFactor 2 Setup Editor — {label}")
         self.journal_log_baseline(car_name, track_name)
