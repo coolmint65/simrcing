@@ -205,7 +205,13 @@ def infer_car(name):
         inferred["aero"] = class_aero.get(inferred["class"], "medium")
 
     # 6. ABS / TC inference
+    historic_classes = ("Historic GT / Sports Car",
+                        "Historic Formula / Open-Wheel",
+                        "Group C / Can-Am / Historic Prototype")
     if is_historic or any(kw in name_lower for kw in HISTORIC_KEYWORDS):
+        inferred["has_abs"] = False
+        inferred["has_tc"] = False
+    elif inferred.get("class") in historic_classes:
         inferred["has_abs"] = False
         inferred["has_tc"] = False
     elif inferred.get("class") in ("Open-Wheel / Formula", "Stock Car / Oval"):
