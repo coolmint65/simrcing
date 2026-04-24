@@ -14,6 +14,24 @@ from ui.editor_tab import EditorMixin
 from ui.journal_tab import JournalMixin
 
 
+_PREFS_DIR = os.path.join(os.path.expanduser("~"), ".rf2_setup")
+_PREFS_FILE = os.path.join(_PREFS_DIR, "prefs.json")
+
+
+def _load_prefs():
+    try:
+        with open(_PREFS_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _save_prefs(prefs):
+    os.makedirs(_PREFS_DIR, exist_ok=True)
+    with open(_PREFS_FILE, "w", encoding="utf-8") as f:
+        json.dump(prefs, f, indent=2)
+
+
 class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
                   JournalMixin):
     def __init__(self, root):
@@ -26,6 +44,9 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
         self.compare_setup = None
         self.compare_name = ""
         self.widgets = {}
+
+        self._prefs = _load_prefs()
+        self.unit_system = tk.StringVar(value=self._prefs.get("unit_system", "metric"))
 
         self._selected_car_data = None
         self._selected_car_name = None
@@ -53,6 +74,25 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
         compare_menu.add_command(label="Load Setup to Compare...", command=self.load_compare)
         compare_menu.add_command(label="Clear Comparison", command=self.clear_compare)
         menubar.add_cascade(label="Compare", menu=compare_menu)
+
+        view_menu = tk.Menu(menubar, tearoff=0)
+        view_menu.add_radiobutton(label="Metric (mm, kPa, N/mm, L)",
+                                   variable=self.unit_system, value="metric",
+                                   command=self._on_unit_system_change)
+        view_menu.add_radiobutton(label="Imperial (in, psi, lbf/in, gal)",
+                                   variable=self.unit_system, value="imperial",
+                                   command=self._on_unit_system_change)
+        menubar.add_cascade(label="Units", menu=view_menu)
+
+    # ---- Unit toggle --------------------------------------------------------
+
+    def _on_unit_system_change(self):
+        self._prefs["unit_system"] = self.unit_system.get()
+        _save_prefs(self._prefs)
+        messagebox.showinfo("Units",
+                            f"Unit preference saved as {self.unit_system.get()}. "
+                            "Sliders remain metric (rF2 native); imperial is used "
+                            "in tooltips and calculator labels only.")
 
     # ---- UI layout ----------------------------------------------------------
 
