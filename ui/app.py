@@ -18,6 +18,7 @@ from ui.calc_tab import CalcMixin
 from ui.library_tab import LibraryMixin
 from ui.analysis_tab import AnalysisMixin
 from ui.session_tab import SessionMixin
+from ui.telemetry_tab import TelemetryMixin
 
 
 _PREFS_DIR = os.path.join(os.path.expanduser("~"), ".rf2_setup")
@@ -40,7 +41,7 @@ def _save_prefs(prefs):
 
 class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
                   JournalMixin, CalcMixin, LibraryMixin, AnalysisMixin,
-                  SessionMixin):
+                  SessionMixin, TelemetryMixin):
     def __init__(self, root):
         self.root = root
         self.root.title("rFactor 2 Car Setup Program")
@@ -193,6 +194,7 @@ class RF2SetupApp(AdvisorMixin, ProblemMixin, WorkflowMixin, EditorMixin,
         self.notebook.add(self._build_library_tab(), text=">> Library")
         self.notebook.add(self._build_analysis_tab(), text=">> Analysis")
         self.notebook.add(self._build_session_tab(), text=">> Sessions")
+        self.notebook.add(self._build_telemetry_tab(), text=">> Telemetry")
         self.notebook.add(self._build_journal_tab(), text=">> Journal")
 
         sep = ttk.Frame(self.notebook)
